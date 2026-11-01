@@ -14,7 +14,7 @@ The original idea (Amazon → Willhaben price overlay) is deferred and kept in [
 2. **Search Amazon** — the background service worker queries `amazon.de/s?k=…` (rate-limited, cached 24 h).
 3. **Match + confirm** — candidates are scored against the listing title; the median candidate is shown as a preview (`≈`), the user confirms the actual product from a top-3 panel.
 4. **Overlay badge** — a Shadow-DOM badge next to the listing price shows the new-price range, the overpay in € and %, and links to the listings.
-5. **Cache / fallback** — results are cached (24 h; blocked responses 1 h); if Amazon blocks the request, the badge degrades to a direct search link.
+5. **Cache / fallback** — results are cached (24 h; blocked responses 1 h); if Amazon blocks the worker's request it retries from a real background tab, and only if that also fails does the badge degrade to a direct search link.
 
 No backend, no Amazon account — everything runs in the browser.
 
@@ -51,7 +51,7 @@ Gekaufst du gebraucht für €35, zeigt das Badge: neu auf Amazon.de €89 → d
 
 Die ursprüngliche Idee (Amazon → Willhaben) ist zurückgestellt und liegt unter [`ideas/amazon-to-willhaben/`](ideas/amazon-to-willhaben/).
 
-**So funktioniert es (MVP):** Anzeige extrahieren (Titel, Preis, Zustand) → Amazon-Suche im Background-Worker (Rate-Limit, 24 h Cache) → Treffer-Matching + Bestätigung durch den Nutzer (Top-3-Panel, Median-Kandidat nur als Vorschau `≈`) → Badge neben dem Anzeigenpreis (Shadow DOM) → Cache/Fallback-Link bei Blockade. Kein Backend, kein Amazon-Konto.
+**So funktioniert es (MVP):** Anzeige extrahieren (Titel, Preis, Zustand) → Amazon-Suche im Background-Worker (Rate-Limit, 24 h Cache) → Treffer-Matching + Bestätigung durch den Nutzer (Top-3-Panel, Median-Kandidat nur als Vorschau `≈`) → Badge neben dem Anzeigenpreis (Shadow DOM) → bei Blockade: Retry über einen Hintergrund-Tab, erst wenn auch das scheitert → Fallback-Link zur Amazon-Suche. Kein Backend, kein Amazon-Konto.
 
 **Roadmap:** `- [x]` Anzeige extrahieren · Amazon-Suche · Matching + Bestätigung · Overlay-Badge · Cache/Fallback + Headless-E2E.
 
@@ -69,7 +69,7 @@ Chrome-расширение (Manifest V3), которое на каждой ст
 
 Исходная идея (Amazon → Willhaben) отложена и лежит в [`ideas/amazon-to-willhaben/`](ideas/amazon-to-willhaben/).
 
-**Как работает (MVP):** извлечение объявления (заголовок, цена, состояние) → поиск Amazon в background-воркере (rate-limit, кэш 24 ч) → матчинг заголовка + обязательное подтверждение пользователем (панель топ-3, медианный кандидат только как предпросмотр `≈`) → бейдж рядом с ценой объявления (Shadow DOM) → кэш и фолбэк-ссылка при блокировке. Без бэкенда, без аккаунта Amazon.
+**Как работает (MVP):** извлечение объявления (заголовок, цена, состояние) → поиск Amazon в background-воркере (rate-limit, кэш 24 ч) → матчинг заголовка + обязательное подтверждение пользователем (панель топ-3, медианный кандидат только как предпросмотр `≈`) → бейдж рядом с ценой объявления (Shadow DOM) → при блокировке: повтор через фоновую вкладку Amazon, и только если и это не вышло — фолбэк-ссылка на поиск. Без бэкенда, без аккаунта Amazon.
 
 **Роадмап:** `- [x]` извлечение объявления · поиск Amazon · матчинг + подтверждение · оверлей-бейдж · кэш/фолбэк + headless-e2e.
 

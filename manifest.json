@@ -1,10 +1,13 @@
 {
   "name": "Willhaben Gewin",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "manifest_version": 3,
   "description": "Zeigt den Amazon.de-Neupreis direkt beim Willhaben-Inserat",
   "background": {"service_worker": "src/background/index.ts"},
-  "content_scripts": [{"matches": ["https://www.willhaben.at/*"], "js": ["src/content/willhaben.ts"]}],
+  "content_scripts": [
+    {"matches": ["https://www.willhaben.at/*"], "js": ["src/content/willhaben.ts"]},
+    {"matches": ["https://www.amazon.de/s*"], "js": ["src/content/amazon.ts"]}
+  ],
   "host_permissions": ["https://www.willhaben.at/*", "https://www.amazon.de/*"],
   "permissions": ["storage"]
 }

@@ -9,6 +9,8 @@ const NAV_POLL_MS = 500;
 /** Give up waiting for the listing price after this long (title-only lookup). */
 const EXTRACT_TIMEOUT_MS = 10_000;
 
+console.log("[whg] content script loaded", location.href);
+
 let currentHref = "";
 let observer: MutationObserver | null = null;
 let extractTimer: number | null = null;
@@ -32,7 +34,17 @@ function beginLookup(listing: Listing): void {
     document.querySelector(SELECTORS.price) ??
     document.querySelector(SELECTORS.priceFallback) ??
     document.querySelector(SELECTORS.title);
-  if (!anchor) return;
+  console.log("[whg] listing extracted", {
+    id: listing.id,
+    title: listing.title,
+    priceEur: listing.priceEur,
+    conditionText: listing.conditionText,
+    anchor: anchor ? `${anchor.tagName}.${anchor.getAttribute("data-testid") ?? ""}` : null,
+  });
+  if (!anchor) {
+    console.warn("[whg] no anchor element found — badge not rendered");
+    return;
+  }
 
   const searchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(listing.title)}`;
   overlay = mountOverlay(anchor, (asin) => {
@@ -61,8 +73,11 @@ async function lookup(listing: Listing, searchUrl: string): Promise<void> {
       title: listing.title,
       priceEur: listing.priceEur,
     };
+    console.log("[whg] → SEARCH_AMAZON", { title: request.title, priceEur: request.priceEur });
     response = (await browser.runtime.sendMessage(request)) as SearchResponse;
+    console.log("[whg] ← response", response.status, response.status === "ok" ? response.stats : response);
   } catch (error) {
+    console.warn("[whg] sendMessage failed", error);
     response = { status: "error", message: error instanceof Error ? error.message : String(error) };
   }
 
@@ -90,7 +105,11 @@ function checkNavigation(): void {
   if (location.href === currentHref) return;
   currentHref = location.href;
   teardown();
-  if (!DETAIL_PATH.test(location.pathname)) return;
+  if (!DETAIL_PATH.test(location.pathname)) {
+    console.log("[whg] not a detail page, skipping", location.pathname);
+    return;
+  }
+  console.log("[whg] detail page detected, waiting for listing", location.pathname);
 
   let settled = false;
   let gaveUp = false;
@@ -120,6 +139,11 @@ function checkNavigation(): void {
     gaveUp = true;
     tryExtract();
     if (!settled) {
+      console.warn("[whg] listing NOT found after 10s", {
+        hasTitleEl: !!document.querySelector(SELECTORS.title),
+        hasPriceEl: !!document.querySelector(SELECTORS.price),
+        h1s: document.querySelectorAll("h1").length,
+      });
       observer?.disconnect();
       observer = null;
     }

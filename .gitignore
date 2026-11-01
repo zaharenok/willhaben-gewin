@@ -1,5 +1,7 @@
 node_modules/
 dist/
+export/
+.nodeterm/
 .env
 .DS_Store
 *.zip

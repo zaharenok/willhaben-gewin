@@ -18,3 +18,8 @@ export type SearchResponse =
   | { status: "ok"; candidates: AmazonItem[]; stats: SearchStats }
   | { status: "blocked" }
   | { status: "error"; message: string };
+
+/** Reply of the amazon-de content script (Plan B) to a PARSE_SEARCH message. */
+export type TabParseResponse =
+  | { type: "PARSE_RESULT"; status: "ok"; items: AmazonItem[] }
+  | { type: "PARSE_RESULT"; status: "blocked" };

@@ -26,7 +26,7 @@ flowchart LR
 Constraints and decisions:
 
 - **No backend** — everything runs in the browser (MVP constraint). Server-side is an explicit non-goal.
-- **Data channel (decided)**: background worker fetches `amazon.de/s?k=…` directly and parses with pure string ops — MV3 service workers have no `DOMParser`, so `src/lib/parse-amazon.ts` is deliberately DOM-free; the live fixture pins the markup contract. Fallback when Amazon blocks/errors: badge becomes a direct search link. The hidden-tab Plan B (needs `scripting` + an amazon content script) is **not implemented** — e2e passed without a block; implement only if a real block appears.
+- **Data channel (decided)**: background worker fetches `amazon.de/s?k=…` directly and parses with pure string ops — MV3 service workers have no `DOMParser`, so `src/lib/parse-amazon.ts` is deliberately DOM-free; the live fixture pins the markup contract. **Plan B is implemented and e2e-verified**: when the worker's fetch is blocked/fails, it opens a background tab on the search URL and relays `PARSE_SEARCH` to `src/content/amazon.ts` (manifest content script on `https://www.amazon.de/s*`), which answers parsed items from the real DOM (readiness window 25 s — idle injection on amazon takes seconds); the worker then closes the tab. Only if the tab path also fails does the badge degrade to a direct search link. No `scripting` permission is needed (manifest-declared content script).
 - **Risks**: markup changes break extraction/parsing (fixture tests fail first); Amazon may block (rate limit 3 s + 1 h blocked-cache + fallback link); used-item matching is imprecise → the badge shows a **min–median range**, the median candidate is only a `≈` preview, and the user must confirm the actual product.
 - **Scope**: `amazon.de` + `willhaben.at` only (Austria). Other marketplaces later.
 - **Non-goals (for now)**: auto-buying, notifications, accounts, server-side backend, Amazon account integration. Do not add these unprompted.
@@ -49,6 +49,7 @@ Constraints and decisions:
 │   │                        # cache + rate limit + fetch/parse/rank pipeline
 │   └── content/
 │       ├── willhaben.ts     # SPA navigation watcher → extract → message → overlay
+│       ├── amazon.ts        # Plan B relay: answers PARSE_SEARCH with parsed items
 │       ├── overlay.ts       # Shadow-DOM badge, states: loading/preview/confirmed/fallback
 │       └── overlay.css      # injected raw into the shadow root
 ├── tests/                   # vitest unit tests + tests/fixtures/*.html (live captures)
@@ -94,8 +95,9 @@ All scripts are defined in `package.json`; do not invent `make`/`npm run …` al
 | Path | Role |
 |---|---|
 | `manifest.json` | MV3 manifest: `content_scripts[0].matches` (`https://www.willhaben.at/*` — broad because willhaben is an SPA), `host_permissions`, TS entry paths (plugin requirement) — the one place for page patterns/permissions |
-| `src/background/index.ts` | `SEARCH_AMAZON` handler: cache → rate limit (3 s, serialized) → fetch/parse/rank — the choke point for Amazon blocks |
+| `src/background/index.ts` | `SEARCH_AMAZON` handler: cache → rate limit (3 s, serialized) → direct fetch → hidden-tab fallback → parse/rank — the choke point for Amazon blocks |
 | `src/content/willhaben.ts` | 500 ms `location.href` poll + MutationObserver; wrong detection = no badge |
+| `src/content/amazon.ts` | Plan B relay on `amazon.de/s*` — parses the tab's DOM on worker request; idle otherwise |
 | `src/content/overlay.ts` | Shadow-DOM badge + top-3 confirm panel + fallback link state |
 | `src/lib/extract-willhaben.ts` | `SELECTORS` — single source of truth for willhaben selectors; change together with the fixture |
 | `src/lib/parse-amazon.ts` | DOM-free amazon search parser + `detectBlock`; change together with the fixture |
@@ -122,4 +124,4 @@ Entry points: `src/background/index.ts` (service worker) and `src/content/willha
 - **Typecheck**: `pnpm exec tsc --noEmit` (build itself is esbuild-only, no type checking).
 - **Build gate**: `pnpm build` must emit `dist/manifest.json` + both entry bundles.
 - **Headless e2e** (per skill `mv3-extension-headless-verify`): launch `~/Library/Caches/ms-playwright/chromium-*/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing --headless=new --remote-debugging-port=9333 --user-data-dir=/tmp/whg-profile --load-extension=<repo>/dist`, attach via `browser.open({app:{cdp_url:"http://127.0.0.1:9333"}})`, open a live willhaben.at listing, poll from the outside for `[data-whg-badge]` (evaluate = isolated world: DOM reads only), accept badge text matching `/€\s?\d/` **or** a rendered fallback link when Amazon blocks. Cleanup: `pkill -f remote-debugging-port=9333; rm -rf /tmp/whg-profile`.
-- **Last verified 2026-11-01**: unit 24/24, `tsc --noEmit` clean, `pnpm build` clean, live e2e — badge rendered `≈ New on Amazon: ab € 39,31 · Overpay −€ 299,34 (−79%)`, top-3 confirm → `+€ 49,65 (+13%)`, selection survived reload (cache hit).
+- **Last verified 2026-11-01**: unit 24/24, `tsc --noEmit` clean, `pnpm build` clean, live e2e — badge rendered `≈ New on Amazon: ab € 39,31 · Overpay −€ 299,34 (−79%)`, top-3 confirm → `+€ 49,65 (+13%)`, selection survived reload (cache hit). Plan B e2e: worker `fetch` broken via CDP → `direct path failed, trying hidden-tab fallback` → relay loaded in the amazon tab → `hidden tab parsed 16 items` at ~8 s → badge with full prices; tab closed itself.
