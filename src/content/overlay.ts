@@ -57,7 +57,7 @@ function renderPanel(data: OverlayData, selected: AmazonItem): string {
  * States: loading → ok (preview ≈ / confirmed) | fallback link
  * (blocked, error, or no parseable Amazon price).
  */
-export function mountOverlay(anchor: Element, onConfirm: (asin: string) => void): OverlayHandle {
+export function mountOverlay(anchor: Element, listingPriceEur: number | null, onConfirm: (asin: string) => void): OverlayHandle {
   const host = document.createElement("div");
   host.setAttribute("data-whg-badge", "");
   const shadow = host.attachShadow({ mode: "open" });
@@ -72,13 +72,18 @@ export function mountOverlay(anchor: Element, onConfirm: (asin: string) => void)
   let panelOpen = false;
 
   const render = (): void => {
+    // Willhaben-side of the comparison — shown in every state so the badge
+    // always reads as "Willhaben €X vs Amazon …".
+    const usedPrice = data?.listingPriceEur ?? listingPriceEur;
+    const usedText =
+      usedPrice === null ? "" : `${esc(t("badgeUsed"))} ${esc(formatEur(usedPrice))} → `;
     if (!data) {
-      root.innerHTML = `<span class="whg-badge whg-loading">⏳ Amazon…</span>`;
+      root.innerHTML = `<span class="whg-badge whg-loading">${usedText}Amazon ⏳</span>`;
       return;
     }
     const priced = data.candidates.filter((c) => c.priceEur !== null);
     if (priced.length === 0) {
-      root.innerHTML = `<a class="whg-badge whg-fallback" href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">⚠ ${esc(t("blockedHint"))} → ${esc(t("openSearch"))}</a>`;
+      root.innerHTML = `<a class="whg-badge whg-fallback" href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">${usedText}⚠ ${esc(t("blockedHint"))} → ${esc(t("openSearch"))}</a>`;
       return;
     }
     const selected = selectedCandidate(data, priced);
@@ -95,7 +100,7 @@ export function mountOverlay(anchor: Element, onConfirm: (asin: string) => void)
     const prefix = confirmed ? "" : "≈ ";
     const panel = panelOpen ? renderPanel(data, selected) : "";
     root.innerHTML =
-      `<button type="button" class="whg-badge whg-main" data-whg-toggle>🛒 ${prefix}${esc(t("badgeNew"))}: ab ${esc(minText)}${overpay}</button>` +
+      `<button type="button" class="whg-badge whg-main" data-whg-toggle>${usedText}🛒 ${prefix}${esc(t("badgeNew"))}: ab ${esc(minText)}${overpay}</button>` +
       panel;
   };
 

@@ -1,9 +1,10 @@
-export type MsgKey = "badgeNew" | "badgeOverpay" | "chooseTitle" | "blockedHint" | "openSearch";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeOverpay" | "chooseTitle" | "blockedHint" | "openSearch";
 
 type Lang = "de" | "en" | "ru";
 
 const DICT: Record<Lang, Record<MsgKey, string>> = {
   de: {
+    badgeUsed: "Willhaben",
     badgeNew: "Neupreis auf Amazon",
     badgeOverpay: "Überzahlung",
     chooseTitle: "Artikel wählen",
@@ -11,6 +12,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     openSearch: "Suche öffnen",
   },
   en: {
+    badgeUsed: "Willhaben",
     badgeNew: "New on Amazon",
     badgeOverpay: "Overpay",
     chooseTitle: "Choose the product",
@@ -18,6 +20,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     openSearch: "Open search",
   },
   ru: {
+    badgeUsed: "Willhaben",
     badgeNew: "Новый на Amazon",
     badgeOverpay: "Переплата",
     chooseTitle: "Выберите товар",

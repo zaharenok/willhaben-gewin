@@ -16,7 +16,7 @@ export function cacheKey(normTitle: string): string {
   for (let i = 0; i < normTitle.length; i++) {
     h = ((h << 5) + h + normTitle.charCodeAt(i)) >>> 0;
   }
-  return `whg:${h.toString(36)}`;
+  return `whg2:${h.toString(36)}`;
 }
 
 interface Entry {

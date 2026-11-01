@@ -47,7 +47,7 @@ function beginLookup(listing: Listing): void {
   }
 
   const searchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(listing.title)}`;
-  overlay = mountOverlay(anchor, (asin) => {
+  overlay = mountOverlay(anchor, listing.priceEur, (asin) => {
     if (!overlayData) return;
     overlayData = { ...overlayData, confirmedAsin: asin };
     overlay?.update(overlayData);

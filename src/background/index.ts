@@ -148,9 +148,14 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
     } catch (error) {
       console.error("[whg:bg] direct fetch threw", error);
     }
-    if (direct?.status === "ok") {
+    // A 200 can still be a bot-lite page with results but stripped prices;
+    // only a priced result is a real success (cacheable).
+    if (direct?.status === "ok" && direct.stats.min !== null) {
       await setCached(storage, key, direct, TTL_OK_MS);
       return direct;
+    }
+    if (direct?.status === "ok") {
+      console.warn("[whg:bg] direct path returned no priced items, trying hidden-tab fallback");
     }
 
     console.log("[whg:bg] direct path failed, trying hidden-tab fallback", direct?.status ?? "fetch error");
@@ -161,7 +166,9 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
       console.error("[whg:bg] hidden tab threw", error);
     }
     if (viaTab?.status === "ok") {
-      await setCached(storage, key, viaTab, TTL_OK_MS);
+      // Even a real-DOM parse can legitimately find no offers — still show
+      // it, but a priceless result is never worth a 24 h cache entry.
+      if (viaTab.stats.min !== null) await setCached(storage, key, viaTab, TTL_OK_MS);
       return viaTab;
     }
 
