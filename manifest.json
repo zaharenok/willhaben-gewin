@@ -1,0 +1,10 @@
+{
+  "name": "Willhaben Gewin",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "description": "Zeigt den Amazon.de-Neupreis direkt beim Willhaben-Inserat",
+  "background": {"service_worker": "src/background/index.ts"},
+  "content_scripts": [{"matches": ["https://www.willhaben.at/*"], "js": ["src/content/willhaben.ts"]}],
+  "host_permissions": ["https://www.willhaben.at/*", "https://www.amazon.de/*"],
+  "permissions": ["storage"]
+}

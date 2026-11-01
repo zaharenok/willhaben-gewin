@@ -1,0 +1,90 @@
+.whg-root {
+  display: inline-block;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 6px 0;
+  vertical-align: middle;
+}
+
+.whg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 440px;
+  padding: 6px 10px;
+  border: 1px solid #f0a020;
+  border-radius: 8px;
+  background: #fff8e8;
+  color: #3a3a3a;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.whg-loading {
+  cursor: default;
+  color: #777;
+}
+
+.whg-fallback:hover {
+  background: #fff1d1;
+}
+
+.whg-panel {
+  position: absolute;
+  z-index: 2147483000;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 340px;
+  max-width: 480px;
+  padding: 6px;
+  border: 1px solid #e0d6c4;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+.whg-root {
+  position: relative;
+}
+
+.whg-panel-title {
+  padding: 4px 8px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8a7a5c;
+  text-transform: uppercase;
+}
+
+.whg-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.whg-row:hover {
+  background: #f5f0e6;
+}
+
+.whg-row.whg-selected {
+  outline: 2px solid #f0a020;
+}
+
+.whg-row-title {
+  color: #2b2b2b;
+}
+
+.whg-row-price {
+  color: #0a7d33;
+  font-weight: 700;
+}
