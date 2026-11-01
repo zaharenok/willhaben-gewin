@@ -1,124 +1,78 @@
-# Willhaben Gewin — Save money buying used on Willhaben 🇦🇹
+# Willhaben Gewin — Willhaben → Amazon
 
-A Chrome extension (Manifest V3) that shows you **how much you'd save** by buying an item used on [Willhaben](https://willhaben.at) while browsing Amazon.de.
+**Status: MVP in development.**
 
-**Example:** viewing a €89 product on Amazon, the extension overlays:
+A Chrome extension (Manifest V3) that shows, on every `willhaben.at` listing page, what the same product costs **new on Amazon.de** — and how much you overpay (or save) by buying used.
 
-> 💚 Used on Willhaben: ~€35 → you save €54 (61%)
+You are browsing a used listing for €35. The badge tells you: this item new on Amazon.de costs €89 → you save €54 (61%) versus buying new. One click opens the Amazon search results for that exact product.
+
+The original idea (Amazon → Willhaben price overlay) is deferred and kept in [`ideas/amazon-to-willhaben/`](ideas/amazon-to-willhaben/).
 
 ## How it works (MVP)
 
-1. A content script on `amazon.de` product pages extracts title, brand, EAN/ASIN and price.
-2. The extension searches Willhaben for matching used listings.
-3. Listings are fuzzy-matched to the product (user confirms the match in MVP).
-4. An overlay badge near the Amazon price shows the used price range, absolute and percentage savings, with links to the listings.
+1. **Extract the listing** — a content script reads title, price, condition, and listing id from the open `willhaben.at` detail page.
+2. **Search Amazon** — the background service worker queries `amazon.de/s?k=…` (rate-limited, cached 24 h).
+3. **Match + confirm** — candidates are scored against the listing title; the median candidate is shown as a preview (`≈`), the user confirms the actual product from a top-3 panel.
+4. **Overlay badge** — a Shadow-DOM badge next to the listing price shows the new-price range, the overpay in € and %, and links to the listings.
+5. **Cache / fallback** — results are cached (24 h; blocked responses 1 h); if Amazon blocks the request, the badge degrades to a direct search link.
 
-## Status
-
-💡 Idea stage — see [IDEA.md](IDEA.md). No code yet.
+No backend, no Amazon account — everything runs in the browser.
 
 ## Roadmap
 
-- [ ] Prototype content script: extract title + price from Amazon product pages
-- [ ] Decide Willhaben data channel (search scraping vs. prefilled search link)
-- [ ] Overlay UI badge near the Amazon price
-- [ ] Fuzzy matching + user confirmation
-- [ ] Price range (min–median) instead of a single number
+- [x] Extract listing (title, price, condition) from a live willhaben.at page
+- [x] Amazon search from the background worker (rate limit + cache)
+- [x] Title matching + explicit user confirmation of the candidate
+- [x] Overlay badge near the listing price (Shadow DOM, DE/EN/RU)
+- [x] Cache, blocked-fallback link, headless e2e verification
+
+## Development
+
+```bash
+pnpm install   # deps
+pnpm dev       # vite dev — loads extension into dev browser
+pnpm build     # vite build → dist/ (load unpacked at chrome://extensions)
+pnpm test      # vitest run (pure-logic unit tests + fixtures)
+```
+
+Stack: TypeScript, Vite + `vite-plugin-web-extension`, `webextension-polyfill`, vitest + jsdom.
 
 ## Non-goals (for now)
 
-Auto-buying, notifications, accounts, server-side backend.
-
-## Contributing
-
-Ideas and feedback welcome — open an issue.
-
-## License
-
-[MIT](LICENSE)
-
----
+Auto-buying, notifications, accounts, server-side backend, other marketplaces.
 
 ## Deutsch
 
-# Willhaben Gewin — Geld sparen beim Gebrauchtkauf auf Willhaben 🇦🇹
+**Status: MVP in Entwicklung.**
 
-Eine Chrome-Erweiterung (Manifest V3), die dir anzeigt, **wie viel du sparst**, wenn du einen Artikel gebraucht auf [Willhaben](https://willhaben.at) kaufst — direkt beim Stöbern auf Amazon.de.
+Chrome-Erweiterung (Manifest V3), die auf jeder `willhaben.at`-Anzeige den **Neupreis auf Amazon.de** für denselben Artikel zeigt — inklusive Überzahlung in € und %.
 
-**Beispiel:** Du siehst ein Produkt für 89 € auf Amazon, und die Erweiterung zeigt:
+Gekaufst du gebraucht für €35, zeigt das Badge: neu auf Amazon.de €89 → du sparst €54 (61 %). Ein Klick öffnet die Amazon-Suche für diesen Artikel.
 
-> 💚 Gebraucht auf Willhaben: ca. 35 € → du sparst 54 € (61 %)
+Die ursprüngliche Idee (Amazon → Willhaben) ist zurückgestellt und liegt unter [`ideas/amazon-to-willhaben/`](ideas/amazon-to-willhaben/).
 
-### So funktioniert es (MVP)
+**So funktioniert es (MVP):** Anzeige extrahieren (Titel, Preis, Zustand) → Amazon-Suche im Background-Worker (Rate-Limit, 24 h Cache) → Treffer-Matching + Bestätigung durch den Nutzer (Top-3-Panel, Median-Kandidat nur als Vorschau `≈`) → Badge neben dem Anzeigenpreis (Shadow DOM) → Cache/Fallback-Link bei Blockade. Kein Backend, kein Amazon-Konto.
 
-1. Ein Content-Script auf `amazon.de`-Produktseiten extrahiert Titel, Marke, EAN/ASIN und Preis.
-2. Die Erweiterung sucht auf Willhaben nach passenden Gebrauchtangeboten.
-3. Die Angebote werden per Fuzzy-Matching zugeordnet (im MVP bestätigt der Nutzer).
-4. Ein Badge neben dem Amazon-Preis zeigt die Preisspanne, absolute und prozentuale Ersparnis mit Links zu den Inseraten.
+**Roadmap:** `- [x]` Anzeige extrahieren · Amazon-Suche · Matching + Bestätigung · Overlay-Badge · Cache/Fallback + Headless-E2E.
 
-### Status
+**Entwicklung:** `pnpm install` · `pnpm dev` · `pnpm build` → `dist/` · `pnpm test`. Stack: TypeScript, Vite + `vite-plugin-web-extension`, `webextension-polyfill`, vitest.
 
-💡 Ideephase — siehe [IDEA.md](IDEA.md). Noch kein Code.
-
-### Roadmap
-
-- [ ] Content-Script-Prototyp: Titel + Preis von Amazon-Produktseiten extrahieren
-- [ ] Willhaben-Datenkanal festlegen (Scraping der Suche vs. vorausgefüllter Suchlink)
-- [ ] Overlay-Badge neben dem Amazon-Preis
-- [ ] Fuzzy-Matching + Bestätigung durch den Nutzer
-- [ ] Preisspanne (Min–Median) statt einer einzelnen Zahl
-
-### Nicht-Ziele (vorerst)
-
-Automatischer Kauf, Benachrichtigungen, Accounts, Server-Backend.
-
-### Mitwirken
-
-Ideen und Feedback willkommen — einfach ein Issue eröffnen.
-
-### Lizenz
-
-[MIT](LICENSE)
-
----
+**Nicht geplant:** Auto-Kauf, Benachrichtigungen, Konten, serverseitiges Backend, weitere Marktplätze.
 
 ## Русский
 
-# Willhaben Gewin — экономь, покупая б/у на Willhaben 🇦🇹
+**Статус: MVP в разработке.**
 
-Расширение для Chrome (Manifest V3), которое показывает, **сколько ты сэкономишь**, если купишь товар б/у на [Willhaben](https://willhaben.at), прямо во время просмотра Amazon.de.
+Chrome-расширение (Manifest V3), которое на каждой странице объявления `willhaben.at` показывает **цену нового товара на Amazon.de** — и переплату (или экономию) в € и %.
 
-**Пример:** смотришь товар за 89 € на Amazon — расширение показывает:
+Смотришь б/у объявление за €35 → бейдж скажет: новый на Amazon.de стоит €89 → экономия €54 (61 %). Один клик открывает выдачу Amazon по этому товару.
 
-> 💚 Б/у на Willhaben: ~35 € → экономия 54 € (61%)
+Исходная идея (Amazon → Willhaben) отложена и лежит в [`ideas/amazon-to-willhaben/`](ideas/amazon-to-willhaben/).
 
-### Как это работает (MVP)
+**Как работает (MVP):** извлечение объявления (заголовок, цена, состояние) → поиск Amazon в background-воркере (rate-limit, кэш 24 ч) → матчинг заголовка + обязательное подтверждение пользователем (панель топ-3, медианный кандидат только как предпросмотр `≈`) → бейдж рядом с ценой объявления (Shadow DOM) → кэш и фолбэк-ссылка при блокировке. Без бэкенда, без аккаунта Amazon.
 
-1. Content script на страницах товаров `amazon.de` извлекает название, бренд, EAN/ASIN и цену.
-2. Расширение ищет совпадающие б/у-объявления на Willhaben.
-3. Товары сопоставляются нечётким поиском (в MVP — с подтверждением пользователем).
-4. Бейдж рядом с ценой Amazon показывает диапазон б/у-цен, экономию в € и %, со ссылками на объявления.
+**Роадмап:** `- [x]` извлечение объявления · поиск Amazon · матчинг + подтверждение · оверлей-бейдж · кэш/фолбэк + headless-e2e.
 
-### Статус
+**Разработка:** `pnpm install` · `pnpm dev` · `pnpm build` → `dist/` · `pnpm test`. Стек: TypeScript, Vite + `vite-plugin-web-extension`, `webextension-polyfill`, vitest.
 
-💡 Стадия идеи — см. [IDEA.md](IDEA.md). Кода пока нет.
-
-### План
-
-- [ ] Прототип content script: извлечение названия и цены со страниц Amazon
-- [ ] Выбрать канал данных Willhaben (парсинг поиска vs ссылка с готовым запросом)
-- [ ] UI-бейдж рядом с ценой Amazon
-- [ ] Fuzzy-match + подтверждение пользователем
-- [ ] Диапазон цен (мин–медиана) вместо одной цифры
-
-### Не-цели (пока)
-
-Автопокупка, уведомления, аккаунты, серверная часть.
-
-### Участие
-
-Идеи и фидбек приветствуются — заводи issue.
-
-### Лицензия
-
-[MIT](LICENSE)
+**Вне скоупа (пока):** авто-покупка, уведомления, аккаунты, серверный бэкенд, другие маркетплейсы.
