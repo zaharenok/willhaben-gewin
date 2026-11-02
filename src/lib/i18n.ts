@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "openSearch" | "loadingHint";
+export type MsgKey = "badgeUsed" | "badgeNew" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "loadingHint";
 
 type Lang = "de" | "en" | "ru";
 
@@ -12,6 +12,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     blockedHint: "Amazon hat die Anfrage blockiert",
     openSearch: "Suche öffnen",
     loadingHint: "Amazon-Preisvergleich erscheint hier",
+    noMatch: "Kein passendes Angebot auf Amazon gefunden",
   },
   en: {
     badgeUsed: "Willhaben",
@@ -22,6 +23,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     blockedHint: "Amazon blocked the request",
     openSearch: "Open search",
     loadingHint: "Amazon price comparison will appear here",
+    noMatch: "No matching product found on Amazon",
   },
   ru: {
     badgeUsed: "Willhaben",
@@ -32,6 +34,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     blockedHint: "Amazon заблокировал запрос",
     openSearch: "Открыть поиск",
     loadingHint: "Здесь появится сравнение цен с Amazon",
+    noMatch: "Подходящий товар на Amazon не найден",
   },
 };
 

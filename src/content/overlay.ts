@@ -78,10 +78,14 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
     const usedText =
       usedPrice === null ? "" : `${esc(t("badgeUsed"))} ${esc(formatEur(usedPrice))} → `;
     if (!data) {
-      root.innerHTML = `<span class="whg-badge whg-loading"><em>⏳ ${esc(t("loadingHint"))}</em><span class="whg-sub">${usedText}Amazon</span></span>`;
+      root.innerHTML = `<span class="whg-badge whg-loading"><span class="whg-spin" aria-hidden="true"></span><em>${esc(t("loadingHint"))}</em><span class="whg-sub">${usedText}Amazon</span></span>`;
       return;
     }
     const priced = data.candidates.filter((c) => c.priceEur !== null);
+    if (data.candidates.length === 0) {
+      root.innerHTML = `<a class="whg-badge whg-fallback" href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">🤷 ${esc(t("noMatch"))} → ${esc(t("openSearch"))}</a>`;
+      return;
+    }
     if (priced.length === 0) {
       root.innerHTML = `<a class="whg-badge whg-fallback" href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">${usedText}⚠ ${esc(t("blockedHint"))} → ${esc(t("openSearch"))}</a>`;
       return;
@@ -94,10 +98,12 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
     let diff = "";
     if (data.listingPriceEur !== null && selected.priceEur !== null) {
       const { diffEur, pct } = computeSavings(data.listingPriceEur, selected.priceEur);
-      const cls = diffEur >= 0 ? "whg-save" : "whg-cost";
-      const arrow = diffEur >= 0 ? "↓" : "↑";
-      const word = diffEur >= 0 ? t("cheaper") : t("costlier");
-      diff = `<span class="whg-diff ${cls}">${arrow} ${esc(formatEur(Math.abs(diffEur)))} (${Math.abs(pct)} %) ${esc(word)}</span>`;
+      const save = diffEur >= 0;
+      const cls = save ? "whg-save" : "whg-cost";
+      const emoji = save ? "💰" : "⚠️";
+      const arrow = save ? "↓" : "↑";
+      const word = save ? t("cheaper") : t("costlier");
+      diff = `<span class="whg-diff ${cls}">${emoji} ${arrow} ${esc(formatEur(Math.abs(diffEur)))} (${Math.abs(pct)} %) ${esc(word)}</span>`;
     }
     const prefix = confirmed ? "" : "≈ ";
     const panel = panelOpen ? renderPanel(data, selected) : "";
@@ -107,6 +113,15 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
       `<span class="whg-sub">${usedText}${prefix}${esc(t("badgeNew"))}: ab ${esc(minText)}</span>` +
       `</button>` +
       panel;
+    if (panelOpen) {
+      // position: fixed escapes the contact box's overflow clipping.
+      const panelEl = root.querySelector<HTMLElement>(".whg-panel");
+      if (panelEl) {
+        const r = host.getBoundingClientRect();
+        panelEl.style.left = `${Math.max(8, r.left)}px`;
+        panelEl.style.top = `${r.bottom + 8}px`;
+      }
+    }
   };
 
   root.addEventListener("click", (event) => {

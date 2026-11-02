@@ -42,10 +42,13 @@ export function scoreMatch(query: string, candidate: string): number {
   return total === 0 ? 0 : hits / total;
 }
 
-/** Top-n Amazon candidates for a listing, best score first. */
-export function rankCandidates(listing: Listing, items: AmazonItem[], n = 3): AmazonItem[] {
+/** Top-n Amazon candidates for a listing, best score first.
+ * Candidates below `minScore` (weighted token overlap) are dropped —
+ * without a threshold a "MacBook Pro" sneaks in for a "Mac mini" listing. */
+export function rankCandidates(listing: Listing, items: AmazonItem[], n = 3, minScore = 0): AmazonItem[] {
   return items
     .map((item) => ({ item, score: scoreMatch(listing.title, item.title) }))
+    .filter((x) => x.score >= minScore)
     .sort((a, b) => b.score - a.score)
     .slice(0, n)
     .map((x) => x.item);

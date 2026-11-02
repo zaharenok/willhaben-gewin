@@ -16,6 +16,8 @@ const SEARCH_URL = "https://www.amazon.de/s?k=";
 /** Min gap between amazon.de fetches; one request in flight at a time. */
 const MIN_FETCH_INTERVAL_MS = 3000;
 const CANDIDATES = 3;
+/** Weighted token overlap a candidate needs to count as the same product. */
+const MIN_MATCH_SCORE = 0.35;
 
 const storage: CacheStorage = {
   get: async (key) => (await browser.storage.local.get(key))[key],
@@ -55,7 +57,7 @@ function buildResponse(request: SearchRequest, items: AmazonItem[]): SearchRespo
     priceEur: request.priceEur,
     conditionText: "",
   };
-  const candidates = rankCandidates(listing, items, CANDIDATES);
+  const candidates = rankCandidates(listing, items, CANDIDATES, MIN_MATCH_SCORE);
   const prices = candidates
     .map((c) => c.priceEur)
     .filter((p): p is number => p !== null)

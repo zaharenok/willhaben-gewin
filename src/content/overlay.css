@@ -42,6 +42,8 @@
   font-size: 14.5px;
   font-weight: 800;
 }
+.whg-save { color: #0a7d33; }
+.whg-cost { color: #b91c1c; }
 
 /* secondary: both prices */
 .whg-sub {
@@ -66,12 +68,23 @@
 
 .whg-fallback { background: #ffd23f; }
 
+.whg-spin {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2.5px solid #000;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: whg-rotate 0.8s linear infinite;
+}
+@keyframes whg-rotate {
+  to { transform: rotate(360deg); }
+}
+
 /* top-3 confirmation panel */
 .whg-panel {
-  position: absolute;
+  position: fixed;
   z-index: 2147483000;
-  top: calc(100% + 8px);
-  left: 0;
   min-width: 340px;
   max-width: 480px;
   padding: 8px;
