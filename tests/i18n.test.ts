@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { t } from "../src/lib/i18n";
 
-const KEYS = ["badgeNew", "badgeOverpay", "chooseTitle", "blockedHint", "openSearch"] as const;
+const KEYS = ["badgeNew", "cheaper", "costlier", "chooseTitle", "blockedHint", "openSearch"] as const;
 
 describe("t", () => {
   it("returns German by default (jsdom navigator.language = en-US → en)", () => {
@@ -17,7 +17,7 @@ describe("t", () => {
 
   it("translates Russian", () => {
     const spy = vi.spyOn(navigator, "language", "get").mockReturnValue("ru-RU");
-    expect(t("badgeOverpay")).toBe("Переплата");
+    expect(t("cheaper")).toBe("дешевле");
     spy.mockRestore();
   });
 

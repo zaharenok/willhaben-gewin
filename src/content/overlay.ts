@@ -78,7 +78,7 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
     const usedText =
       usedPrice === null ? "" : `${esc(t("badgeUsed"))} ${esc(formatEur(usedPrice))} → `;
     if (!data) {
-      root.innerHTML = `<span class="whg-badge whg-loading">${usedText}⏳ <em>${esc(t("loadingHint"))}</em></span>`;
+      root.innerHTML = `<span class="whg-badge whg-loading"><em>⏳ ${esc(t("loadingHint"))}</em><span class="whg-sub">${usedText}Amazon</span></span>`;
       return;
     }
     const priced = data.candidates.filter((c) => c.priceEur !== null);
@@ -90,17 +90,22 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
     const confirmed = data.confirmedAsin === selected.asin;
     const minText = data.stats.min !== null ? formatEur(data.stats.min) : "";
 
-    let overpay = "";
+    // diffEur = amazon − willhaben: positive → the used listing is cheaper.
+    let diff = "";
     if (data.listingPriceEur !== null && selected.priceEur !== null) {
       const { diffEur, pct } = computeSavings(data.listingPriceEur, selected.priceEur);
-      const diffSign = diffEur >= 0 ? "+" : "−";
-      const pctSign = pct >= 0 ? "+" : "−";
-      overpay = ` · ${esc(t("badgeOverpay"))} ${diffSign}${esc(formatEur(Math.abs(diffEur)))} (${pctSign}${Math.abs(pct)}%)`;
+      const cls = diffEur >= 0 ? "whg-save" : "whg-cost";
+      const arrow = diffEur >= 0 ? "↓" : "↑";
+      const word = diffEur >= 0 ? t("cheaper") : t("costlier");
+      diff = `<span class="whg-diff ${cls}">${arrow} ${esc(formatEur(Math.abs(diffEur)))} (${Math.abs(pct)} %) ${esc(word)}</span>`;
     }
     const prefix = confirmed ? "" : "≈ ";
     const panel = panelOpen ? renderPanel(data, selected) : "";
     root.innerHTML =
-      `<button type="button" class="whg-badge whg-main" data-whg-toggle>${usedText}🛒 ${prefix}${esc(t("badgeNew"))}: ab ${esc(minText)}${overpay}</button>` +
+      `<button type="button" class="whg-badge whg-main" data-whg-toggle>` +
+      diff +
+      `<span class="whg-sub">${usedText}${prefix}${esc(t("badgeNew"))}: ab ${esc(minText)}</span>` +
+      `</button>` +
       panel;
   };
 

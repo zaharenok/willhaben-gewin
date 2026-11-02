@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "badgeOverpay" | "chooseTitle" | "blockedHint" | "openSearch" | "loadingHint";
+export type MsgKey = "badgeUsed" | "badgeNew" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "openSearch" | "loadingHint";
 
 type Lang = "de" | "en" | "ru";
 
@@ -6,7 +6,8 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
   de: {
     badgeUsed: "Willhaben",
     badgeNew: "Neupreis auf Amazon",
-    badgeOverpay: "Überzahlung",
+    cheaper: "günstiger",
+    costlier: "teurer",
     chooseTitle: "Artikel wählen",
     blockedHint: "Amazon hat die Anfrage blockiert",
     openSearch: "Suche öffnen",
@@ -15,7 +16,8 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
   en: {
     badgeUsed: "Willhaben",
     badgeNew: "New on Amazon",
-    badgeOverpay: "Overpay",
+    cheaper: "cheaper",
+    costlier: "more expensive",
     chooseTitle: "Choose the product",
     blockedHint: "Amazon blocked the request",
     openSearch: "Open search",
@@ -24,7 +26,8 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
   ru: {
     badgeUsed: "Willhaben",
     badgeNew: "Новый на Amazon",
-    badgeOverpay: "Переплата",
+    cheaper: "дешевле",
+    costlier: "дороже",
     chooseTitle: "Выберите товар",
     blockedHint: "Amazon заблокировал запрос",
     openSearch: "Открыть поиск",
