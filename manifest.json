@@ -1,6 +1,6 @@
 {
   "name": "Willhaben Gewin",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "manifest_version": 3,
   "description": "Zeigt den Amazon.de-Neupreis direkt beim Willhaben-Inserat",
   "background": {"service_worker": "src/background/index.ts"},
