@@ -41,7 +41,17 @@ function weight(token: string): number {
   // Numbers (sizes, model numbers) count double.
   return /\d/.test(token) ? 2 : 1;
 }
-/** Memory capacities: numbers directly followed by "gb" (RAM on desktops). */
+
+/**
+ * Product-line words: sharing one of these means the same family. When both
+ * titles carry line words but none shared ("mac studio" vs "macbook pro"),
+ * they are different products — veto regardless of chip/RAM overlap.
+ */
+const LINE_WORDS: Record<string, true> = {
+  macbook: true, studio: true, mini: true, imac: true,
+};
+
+
 function capacitiesGb(text: string): string[] {
   const tokens = tokenize(text);
   const caps: string[] = [];
@@ -64,6 +74,15 @@ function capacitiesGb(text: string): string[] {
  * (M4 vs M5 is comparable per product decision; GB size is not.)
  */
 export function relevance(a: string, b: string): number {
+  // Line veto: "mac studio" vs "macbook pro" are different products even
+  // with the same chip and RAM — a shared line word is required.
+  const aLines = tokenize(a).filter((t) => LINE_WORDS[t]);
+  const bLines = tokenize(b).filter((t) => LINE_WORDS[t]);
+  if (aLines.length > 0 && bLines.length > 0 && !aLines.some((l) => bLines.includes(l))) {
+    return 0;
+  }
+  // Capacity veto: a 128 GB machine is NOT comparable to a 36 GB one,
+  // whatever the generation — RAM size is part of the product identity.
   const aCaps = capacitiesGb(a);
   const bCaps = capacitiesGb(b);
   if ((aCaps.length > 0 || bCaps.length > 0) && !aCaps.some((c) => bCaps.includes(c))) {

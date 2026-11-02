@@ -16,7 +16,7 @@ describe("cacheKey", () => {
   it("is deterministic and title-sensitive", () => {
     expect(cacheKey("iphone 13 128gb")).toBe(cacheKey("iphone 13 128gb"));
     expect(cacheKey("iphone 13 128gb")).not.toBe(cacheKey("iphone 14 128gb"));
-    expect(cacheKey("iphone 13 128gb")).toMatch(/^whg3:[a-z0-9]+$/);
+    expect(cacheKey("iphone 13 128gb")).toMatch(/^whg4:[a-z0-9]+$/);
   });
 });
 

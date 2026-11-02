@@ -49,6 +49,12 @@ describe("relevance", () => {
     expect(relevance("Apple Mac Studio M4 Max 128 GB RAM - 2 TB SSD", "Apple Mac Studio mit Apple M5 Max Chip, 36 GB")).toBe(0);
     expect(relevance("Apple Mac Studio M4 Max 128 GB RAM - 2 TB SSD", "Apple Mac Studio mit Apple M5 Max Chip - Silber")).toBe(0);
   });
+  it("vetoes different product lines (Mac Studio vs MacBook Pro)", () => {
+    expect(relevance("Apple Mac Studio M1 Max - 32 GB RAM / 1 TB SSD", "Apple MacBook Pro 2021, Apple M1 Max Chip mit (16 Zoll, 32 GB RAM, 1 TB SSD)")).toBe(0);
+  });
+  it("keeps same line (Mac Studio vs Mac Studio)", () => {
+    expect(relevance("Apple Mac Studio M1 Max 32 GB", "Apple Mac Studio mit M1 Max Chip, 32 GB")).toBeGreaterThan(0.5);
+  });
   it("compares across generations when capacity matches", () => {
     expect(relevance("Apple Mac Studio M4 Max 128 GB RAM", "Apple Mac Studio mit Apple M5 Max Chip, 128 GB")).toBeGreaterThan(0.5);
   });
