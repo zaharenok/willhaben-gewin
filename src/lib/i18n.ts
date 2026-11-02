@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "badgeOverpay" | "chooseTitle" | "blockedHint" | "openSearch";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeOverpay" | "chooseTitle" | "blockedHint" | "openSearch" | "loadingHint";
 
 type Lang = "de" | "en" | "ru";
 
@@ -10,6 +10,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     chooseTitle: "Artikel wählen",
     blockedHint: "Amazon hat die Anfrage blockiert",
     openSearch: "Suche öffnen",
+    loadingHint: "Amazon-Preisvergleich erscheint hier",
   },
   en: {
     badgeUsed: "Willhaben",
@@ -18,6 +19,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     chooseTitle: "Choose the product",
     blockedHint: "Amazon blocked the request",
     openSearch: "Open search",
+    loadingHint: "Amazon price comparison will appear here",
   },
   ru: {
     badgeUsed: "Willhaben",
@@ -26,6 +28,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     chooseTitle: "Выберите товар",
     blockedHint: "Amazon заблокировал запрос",
     openSearch: "Открыть поиск",
+    loadingHint: "Здесь появится сравнение цен с Amazon",
   },
 };
 

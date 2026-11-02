@@ -78,7 +78,7 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
     const usedText =
       usedPrice === null ? "" : `${esc(t("badgeUsed"))} ${esc(formatEur(usedPrice))} → `;
     if (!data) {
-      root.innerHTML = `<span class="whg-badge whg-loading">${usedText}Amazon ⏳</span>`;
+      root.innerHTML = `<span class="whg-badge whg-loading">${usedText}⏳ <em>${esc(t("loadingHint"))}</em></span>`;
       return;
     }
     const priced = data.candidates.filter((c) => c.priceEur !== null);
