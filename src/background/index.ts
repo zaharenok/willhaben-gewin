@@ -28,6 +28,8 @@ const storage: CacheStorage = {
 let lastFetchAt = 0;
 let queue: Promise<unknown> = Promise.resolve();
 
+console.log("[whg:bg] service worker up, version", browser.runtime.getManifest().version);
+
 function delay(ms: number): Promise<void> {
   const { promise, resolve } = Promise.withResolvers<void>();
   setTimeout(resolve, ms);
