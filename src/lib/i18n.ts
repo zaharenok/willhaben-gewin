@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb" | "adNote";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb";
 
 type Lang = "de" | "en" | "ru";
 
@@ -16,7 +16,6 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     noMatch: "Kein passendes Angebot gefunden",
     openGoogle: "Google Shopping",
     appleRefurb: "Apple Refurbished",
-    adNote: "Amazon-Links sind Partnerlinks",
   },
   en: {
     badgeUsed: "Willhaben",
@@ -31,7 +30,6 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     loadingHint: "Amazon price comparison will appear here",
     noMatch: "No matching offer found",
     appleRefurb: "Apple Refurbished",
-    adNote: "Amazon links are affiliate links",
   },
   ru: {
     badgeUsed: "Willhaben",
@@ -46,7 +44,6 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     loadingHint: "Здесь появится сравнение цен с Amazon",
     noMatch: "Подходящее предложение не найдено",
     appleRefurb: "Apple Refurbished",
-    adNote: "Amazon-ссылки — партнёрские",
   },
 };
 

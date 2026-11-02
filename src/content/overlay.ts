@@ -54,7 +54,7 @@ function renderPanel(data: OverlayData, selected: AmazonItem): string {
       return `<div class="${cls}" data-asin="${esc(c.asin)}"><span class="whg-row-title">${esc(c.title)}${source}</span><span class="whg-row-price">${esc(price)}</span>${buy}</div>`;
     })
     .join("");
-  return `<div class="whg-panel"><div class="whg-panel-title">${esc(t("chooseTitle"))}<span class="whg-adnote">${esc(t("adNote"))}</span></div>${rows}</div>`;
+  return `<div class="whg-panel"><div class="whg-panel-title">${esc(t("chooseTitle"))}</div>${rows}</div>`;
 }
 
 /**
@@ -88,16 +88,24 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
     }
     const priced = data.candidates.filter((c) => c.priceEur !== null);
     const googleUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(new URL(data.searchUrl).searchParams.get("k") ?? "")}`;
-    if (data.candidates.length === 0) {
+    if (data.candidates.length === 0 || priced.length === 0) {
+      const hint = data.candidates.length === 0 ? `🤷 ${esc(t("noMatch"))}` : `${usedText}⚠ ${esc(t("blockedHint"))}`;
+      const linkPanel = panelOpen
+        ? `<div class="whg-panel"><div class="whg-panel-title">${esc(t("chooseTitle"))}</div>` +
+          `<a class="whg-row whg-linkrow" href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer"><span class="whg-row-title">${esc(t("openSearch"))} ↗</span></a>` +
+          `<a class="whg-row whg-linkrow" href="${googleUrl}" target="_blank" rel="noopener noreferrer"><span class="whg-row-title">${esc(t("openGoogle"))} ↗</span></a></div>`
+        : "";
       root.innerHTML =
-        `<span class="whg-nomatch">🤷 ${esc(t("noMatch"))} → <a href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">${esc(t("openSearch"))}</a> · ` +
-        `<a href="${googleUrl}" target="_blank" rel="noopener noreferrer">${esc(t("openGoogle"))}</a></span>`;
-      return;
-    }
-    if (priced.length === 0) {
-      root.innerHTML =
-        `<span class="whg-nomatch">${usedText}⚠ ${esc(t("blockedHint"))} → <a href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">${esc(t("openSearch"))}</a> · ` +
-        `<a href="${googleUrl}" target="_blank" rel="noopener noreferrer">${esc(t("openGoogle"))}</a></span>`;
+        `<button type="button" class="whg-badge whg-fallback" data-whg-toggle><span class="whg-sub">${hint}</span></button>` +
+        linkPanel;
+      if (panelOpen) {
+        const panelEl = root.querySelector<HTMLElement>(".whg-panel");
+        if (panelEl) {
+          const r = host.getBoundingClientRect();
+          panelEl.style.left = `${Math.max(8, r.left)}px`;
+          panelEl.style.top = `${r.bottom + 8}px`;
+        }
+      }
       return;
     }
     const selected = selectedCandidate(data, priced);
@@ -143,7 +151,7 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
       onConfirm(row.getAttribute("data-asin") ?? "");
       return;
     }
-    if (target.closest("[data-whg-toggle]") && data && data.candidates.some((c) => c.priceEur !== null)) {
+    if (target.closest("[data-whg-toggle]") && data) {
       panelOpen = !panelOpen;
       render();
     }
