@@ -72,7 +72,13 @@ function beginLookup(listing: Listing): void {
     if (location.href !== hrefAtStart) return; // SPA navigated away
     const anchor = pickAnchor();
     if (anchor) {
-      mount(anchor);
+      // Willhaben's PayLivery financing badge shares the price row and
+      // squeezes our badge — mount BELOW it when it's there.
+      const paylivery = document.querySelector('[data-testid="contact-box-paylivery-badge"]');
+      // …mount AFTER ITS ROW (parent) — inserting after the badge itself keeps
+      // us inside the same horizontal flex row.
+      const below = paylivery && anchor.compareDocumentPosition(paylivery) & Node.DOCUMENT_POSITION_FOLLOWING ? paylivery.parentElement ?? paylivery : anchor;
+      mount(below);
       return;
     }
     if (Date.now() - startedAt < ANCHOR_WAIT_MS) {
