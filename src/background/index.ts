@@ -8,7 +8,7 @@ import {
   type CacheStorage,
 } from "../lib/cache";
 import type { Listing } from "../lib/extract-willhaben";
-import { rankCandidates } from "../lib/match";
+import { rankCandidates, searchQueryFor } from "../lib/match";
 import { detectBlock, parseAmazonSearch, type AmazonItem } from "../lib/parse-amazon";
 import type { SearchRequest, SearchResponse, TabParseResponse } from "../lib/protocol";
 
@@ -17,7 +17,7 @@ const SEARCH_URL = "https://www.amazon.de/s?k=";
 const MIN_FETCH_INTERVAL_MS = 3000;
 const CANDIDATES = 3;
 /** Weighted token overlap a candidate needs to count as the same product. */
-const MIN_MATCH_SCORE = 0.35;
+const MIN_MATCH_SCORE = 0.5;
 
 const storage: CacheStorage = {
   get: async (key) => (await browser.storage.local.get(key))[key],
@@ -72,7 +72,7 @@ function buildResponse(request: SearchRequest, items: AmazonItem[]): SearchRespo
 }
 
 async function searchAmazon(request: SearchRequest): Promise<SearchResponse> {
-  const url = `${SEARCH_URL}${encodeURIComponent(request.title)}&language=de_DE`;
+  const url = `${SEARCH_URL}${encodeURIComponent(searchQueryFor(request.title))}&language=de_DE`;
   const res = await fetch(url, { credentials: "omit" });
   const html = await res.text();
   const blocked = !res.ok || detectBlock(html);
@@ -90,7 +90,7 @@ const TAB_READY_DEADLINE_MS = 25_000;
 const TAB_READY_DELAY_MS = 500;
 
 async function searchViaHiddenTab(request: SearchRequest): Promise<SearchResponse> {
-  const url = `${SEARCH_URL}${encodeURIComponent(request.title)}&language=de_DE`;
+  const url = `${SEARCH_URL}${encodeURIComponent(searchQueryFor(request.title))}&language=de_DE`;
   const tab = await browser.tabs.create({ url, active: false });
   const tabId = tab.id;
   console.log("[whg:bg] hidden tab opened", { tabId, url });

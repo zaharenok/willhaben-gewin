@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { extractListing } from "../src/lib/extract-willhaben";
-import { rankCandidates, scoreMatch } from "../src/lib/match";
+import { rankCandidates, scoreMatch, searchQueryFor } from "../src/lib/match";
 import { parseAmazonSearch } from "../src/lib/parse-amazon";
 
 const willhabenHtml = readFileSync(resolve(process.cwd(), "tests/fixtures/willhaben-ad.html"), "utf8");
@@ -32,6 +32,15 @@ describe("scoreMatch", () => {
   it("returns 0 for empty inputs", () => {
     expect(scoreMatch("", "anything")).toBe(0);
     expect(scoreMatch("iphone", "")).toBe(0);
+  });
+});
+
+describe("searchQueryFor", () => {
+  it("drops condition words and specs overflow, keeps brand+model first", () => {
+    expect(searchQueryFor("Apple Mac Studio M4 Max 128 GB RAM - 2 TB SSD"))
+      .toBe("apple mac studio m4 max 128 gb ram");
+    expect(searchQueryFor("Samsung Pro 990 M.2 SSD 2TB Neu und versiegelt"))
+      .not.toContain("neu");
   });
 });
 

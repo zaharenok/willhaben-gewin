@@ -17,9 +17,39 @@ export function tokenize(text: string): string[] {
     .filter((t) => t.length > 0 && !STOPWORDS.has(t));
 }
 
+/** Words that describe the offer, not the product — poison for search. */
+const CONDITION_WORDS: Record<string, true> = {
+  neu: true, versiegelt: true, gebraucht: true, neuwertig: true, ovp: true,
+  refurbished: true, "generalüberholt": true, defekt: true, spenden: true,
+  versand: true, abholung: true, ticket: true, src: true,
+};
+
+/**
+ * Focused amazon.de search query for a willhaben title: condition words out,
+ * first 8 tokens kept. Amazon relevance collapses on long spec-laden titles
+ * ("Apple Mac Studio M4 Max 128 GB RAM 2 TB SSD" finds MacBooks and SSD
+ * upgrades instead of the Mac Studio itself) — brand + model up front works.
+ */
+export function searchQueryFor(title: string): string {
+  return tokenize(title)
+    .filter((token) => !CONDITION_WORDS[token])
+    .slice(0, 8)
+    .join(" ");
+}
+
 function weight(token: string): number {
   // Numbers (sizes, model numbers) count double.
   return /\d/.test(token) ? 2 : 1;
+}
+
+/**
+ * Symmetric relevance: the better of "query covered by candidate" and
+ * "candidate covered by query". Amazon titles are short ("Apple Mac Studio
+ * mit M5 Max Chip"), willhaben titles spec-laden — one-way overlap punishes
+ * the true product when the listing lists specs Amazon omits.
+ */
+export function relevance(a: string, b: string): number {
+  return Math.max(scoreMatch(a, b), scoreMatch(b, a));
 }
 
 /**
@@ -47,7 +77,7 @@ export function scoreMatch(query: string, candidate: string): number {
  * without a threshold a "MacBook Pro" sneaks in for a "Mac mini" listing. */
 export function rankCandidates(listing: Listing, items: AmazonItem[], n = 3, minScore = 0): AmazonItem[] {
   return items
-    .map((item) => ({ item, score: scoreMatch(listing.title, item.title) }))
+    .map((item) => ({ item, score: relevance(listing.title, item.title) }))
     .filter((x) => x.score >= minScore)
     .sort((a, b) => b.score - a.score)
     .slice(0, n)
