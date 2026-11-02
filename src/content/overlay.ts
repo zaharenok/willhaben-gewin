@@ -1,6 +1,7 @@
 import css from "./overlay.css?raw";
 import { t } from "../lib/i18n";
 import type { AmazonItem } from "../lib/parse-amazon";
+import { amazonProductUrl } from "../lib/amazon-links";
 import { computeSavings, formatEur } from "../lib/savings";
 
 export interface OverlayData {
@@ -47,10 +48,13 @@ function renderPanel(data: OverlayData, selected: AmazonItem): string {
       const cls = c.asin === selected.asin ? "whg-row whg-selected" : "whg-row";
       const price = c.priceEur !== null ? formatEur(c.priceEur) : "—";
       const source = c.source === "apple" ? ` <span class="whg-source">${esc(t("appleRefurb"))}</span>` : "";
-      return `<button type="button" class="${cls}" data-asin="${esc(c.asin)}"><span class="whg-row-title">${esc(c.title)}${source}</span><span class="whg-row-price">${esc(price)}</span></button>`;
+      const buy = c.source === "apple"
+        ? `<a class="whg-buy" href="${esc(c.url?.startsWith("http") ? c.url : `https://www.apple.com${c.url ?? "/at/shop/refurbished/mac"}`)}" target="_blank" rel="noopener noreferrer" title="${esc(c.title)}">↗</a>`
+        : `<a class="whg-buy" href="${esc(amazonProductUrl(c.asin))}" target="_blank" rel="noopener noreferrer" title="${esc(c.title)}">Amazon↗</a>`;
+      return `<div class="${cls}" data-asin="${esc(c.asin)}"><span class="whg-row-title">${esc(c.title)}${source}</span><span class="whg-row-price">${esc(price)}</span>${buy}</div>`;
     })
     .join("");
-  return `<div class="whg-panel"><div class="whg-panel-title">${esc(t("chooseTitle"))}</div>${rows}</div>`;
+  return `<div class="whg-panel"><div class="whg-panel-title">${esc(t("chooseTitle"))}<span class="whg-adnote">${esc(t("adNote"))}</span></div>${rows}</div>`;
 }
 
 /**

@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill";
 import { extractListing, SELECTORS, type Listing } from "../lib/extract-willhaben";
 import { searchQueryFor } from "../lib/match";
+import { amazonSearchUrl } from "../lib/amazon-links";
 import type { SearchRequest, SearchResponse } from "../lib/protocol";
 import { mountOverlay, type OverlayData, type OverlayHandle } from "./overlay";
 
@@ -54,7 +55,7 @@ function beginLookup(listing: Listing): void {
   });
 
   const mount = (anchor: Element): void => {
-    const searchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(searchQueryFor(listing.title))}`;
+    const searchUrl = amazonSearchUrl(searchQueryFor(listing.title));
     console.log("[whg] badge anchor", `${anchor.tagName}.${anchor.getAttribute("data-testid") ?? ""}`);
     overlay = mountOverlay(anchor, listing.priceEur, (asin) => {
       if (!overlayData) return;

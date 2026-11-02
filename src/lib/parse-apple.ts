@@ -26,7 +26,7 @@ export function parseAppleRefurb(html: string): AmazonItem[] {
         const title = data.name.replace(/^Refurbished\s+/i, "").trim();
         const asin = data.url?.match(/\/product\/([^/]+)\//)?.[1] ?? "";
         if (title && asin) {
-          items.push({ asin: `apple:${asin}`, title, priceEur: data.offers[0].price ?? null, source: "apple" });
+          items.push({ asin: `apple:${asin}`, title, priceEur: data.offers[0]?.price ?? null, source: "apple", url: data.url });
         }
       }
     } catch {

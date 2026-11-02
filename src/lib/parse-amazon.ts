@@ -4,8 +4,9 @@ export interface AmazonItem {
   asin: string;
   title: string;
   priceEur: number | null;
-  /** Where the item came from — shown as a tag in the confirm panel. */
   source?: "amazon" | "apple";
+  /** Absolute product URL when the source provides one (apple refurb). */
+  url?: string;
 }
 
 /**
