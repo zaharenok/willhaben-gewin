@@ -1,21 +1,20 @@
 .whg-root {
   position: relative;
-  display: block;
-  margin: 8px 0 4px;
+  display: inline-block;
+  margin: 6px 0 2px;
   font-family: inherit;
-  font-size: 14px;
-  line-height: 1.35;
+  font-size: 13px;
+  line-height: 1.3;
 }
 
 .whg-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  max-width: 320px;
-  padding: 8px 12px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  max-width: 340px;
+  padding: 3px 10px;
   border: 1px solid #d8d2c8;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #ffffff;
   color: #2b2b2b;
   font: inherit;
@@ -24,19 +23,21 @@
   cursor: pointer;
 }
 
-/* hero line: the saving/overpay number */
+/* hero: the saving/overpay number */
 .whg-diff {
-  font-size: 16px;
+  font-size: 13.5px;
   font-weight: 700;
+  white-space: nowrap;
 }
 .whg-save { color: #0a7d33; }
 .whg-cost { color: #b45309; }
 
-/* secondary line: both prices */
+/* secondary: both prices */
 .whg-sub {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: #6f6a61;
+  white-space: nowrap;
 }
 
 /* loading placeholder */
@@ -47,10 +48,9 @@
 }
 .whg-loading em {
   font-style: normal;
-  font-weight: 500;
+  font-weight: 600;
   color: #8a7a5c;
 }
-.whg-loading .whg-sub { color: #8a7a5c; }
 
 .whg-fallback:hover { background: #f7f4ee; }
 
