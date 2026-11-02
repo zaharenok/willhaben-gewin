@@ -61,6 +61,9 @@ describe("relevance", () => {
   it("keeps accessory listings when the listing IS the accessory", () => {
     expect(relevance("Hülle für MacBook Air M4", "Fintie Hülle Kompatibel mit MacBook Air M4")).toBeGreaterThan(0.3);
   });
+  it("vetoes different brands (Apple Mac Studio vs HP laptop)", () => {
+    expect(relevance("Apple Mac Studio M1 Max - 32 GB RAM / 1 TB SSD", "HP 17 Business Laptop, AMD Ryzen 7 7730U, 32 GB DDR4 RAM, 1 TB SSD, 17,3 Zoll")).toBe(0);
+  });
   it("compares across generations when capacity matches", () => {
     expect(relevance("Apple Mac Studio M4 Max 128 GB RAM", "Apple Mac Studio mit Apple M5 Max Chip, 128 GB")).toBeGreaterThan(0.5);
   });

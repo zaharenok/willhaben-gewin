@@ -58,6 +58,14 @@ const ACCESSORY_WORDS: Record<string, true> = {
   ladekabel: true, kabel: true, halterung: true, kompatibel: true, etui: true,
   staubschutz: true,
 };
+
+/** Brands: an Apple listing never has an HP candidate as its price reference. */
+const BRAND_WORDS: Record<string, true> = {
+  apple: true, samsung: true, hp: true, dell: true, lenovo: true, asus: true,
+  acer: true, lg: true, huawei: true, xiaomi: true, msi: true, honor: true,
+  sony: true, panasonic: true, canon: true, nikon: true, bosch: true, makita: true,
+  jbl: true, anker: true, logitech: true, nintendo: true,
+};
 function capacitiesGb(text: string): string[] {
   const tokens = tokenize(text);
   const caps: string[] = [];
@@ -75,6 +83,12 @@ function capacitiesGb(text: string): string[] {
  * the true product when the listing lists specs Amazon omits.
 */
 export function relevance(a: string, b: string): number {
+  // Brand veto: Apple vs HP is never the same product, whatever specs align.
+  const aBrands = tokenize(a).filter((t) => BRAND_WORDS[t]);
+  const bBrands = tokenize(b).filter((t) => BRAND_WORDS[t]);
+  if (aBrands.length > 0 && bBrands.length > 0 && !aBrands.some((x) => bBrands.includes(x))) {
+    return 0;
+  }
   // Line veto: "mac studio" vs "macbook pro" are different products even
   // with the same chip and RAM — a shared line word is required.
   const aLines = tokenize(a).filter((t) => LINE_WORDS[t]);
