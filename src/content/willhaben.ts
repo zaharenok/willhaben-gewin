@@ -30,10 +30,18 @@ function teardown(): void {
 }
 
 function beginLookup(listing: Listing): void {
+  // Prefer a *visible* price element — the sticky-header price is hidden
+  // until the user scrolls, so anchoring there makes the badge invisible.
+  const anchorCandidates = [
+    document.querySelector(SELECTORS.price),
+    document.querySelector(SELECTORS.priceLegacy),
+    document.querySelector(SELECTORS.priceFallback),
+    document.querySelector(SELECTORS.title),
+  ].filter((el): el is Element => el !== null);
   const anchor =
-    document.querySelector(SELECTORS.price) ??
-    document.querySelector(SELECTORS.priceFallback) ??
-    document.querySelector(SELECTORS.title);
+    anchorCandidates.find((el) => el.getClientRects().length > 0) ??
+    anchorCandidates[0] ??
+    null;
   console.log("[whg] listing extracted", {
     id: listing.id,
     title: listing.title,

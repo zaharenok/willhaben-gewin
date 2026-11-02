@@ -14,7 +14,8 @@ export interface Listing {
  */
 export const SELECTORS = {
   title: 'h1[data-testid="ad-detail-header"]',
-  price: '[data-testid="contact-box-price-box-price-value-0"]',
+  price: '[data-testid="contact-box-price-box-price-value"]',
+  priceLegacy: '[data-testid="contact-box-price-box-price-value-0"]',
   priceFallback: '[data-testid="sticky-header-price"]',
   attributeItem: '[data-testid="attribute-item"]',
   attributeTitle: '[data-testid="attribute-title"]',
@@ -31,7 +32,9 @@ export function extractListing(doc: Document): Listing | null {
   if (!title) return null;
 
   const priceEl =
-    doc.querySelector(SELECTORS.price) ?? doc.querySelector(SELECTORS.priceFallback);
+    doc.querySelector(SELECTORS.price) ??
+    doc.querySelector(SELECTORS.priceLegacy) ??
+    doc.querySelector(SELECTORS.priceFallback);
   const priceEur = priceEl ? parseEurDe(priceEl.textContent ?? "") : null;
 
   let conditionText = "";
