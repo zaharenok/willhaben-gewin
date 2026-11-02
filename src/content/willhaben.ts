@@ -29,39 +29,57 @@ function teardown(): void {
   overlayData = null;
 }
 
-function beginLookup(listing: Listing): void {
-  // Prefer a *visible* price element — the sticky-header price is hidden
-  // until the user scrolls, so anchoring there makes the badge invisible.
-  const anchorCandidates = [
+/** The sticky-header price lives in a cramped top bar — never anchor there.
+ * Wait briefly for the contact-box price (SPA renders it late); the title
+ * heading is the last resort. */
+const ANCHOR_WAIT_MS = 5000;
+const ANCHOR_POLL_MS = 300;
+
+function pickAnchor(): Element | null {
+  const candidates = [
     document.querySelector(SELECTORS.price),
     document.querySelector(SELECTORS.priceLegacy),
-    document.querySelector(SELECTORS.priceFallback),
     document.querySelector(SELECTORS.title),
   ].filter((el): el is Element => el !== null);
-  const anchor =
-    anchorCandidates.find((el) => el.getClientRects().length > 0) ??
-    anchorCandidates[0] ??
-    null;
+  return candidates.find((el) => el.getClientRects().length > 0) ?? null;
+}
+
+function beginLookup(listing: Listing): void {
   console.log("[whg] listing extracted", {
     id: listing.id,
     title: listing.title,
     priceEur: listing.priceEur,
     conditionText: listing.conditionText,
-    anchor: anchor ? `${anchor.tagName}.${anchor.getAttribute("data-testid") ?? ""}` : null,
   });
-  if (!anchor) {
-    console.warn("[whg] no anchor element found — badge not rendered");
-    return;
-  }
 
-  const searchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(listing.title)}`;
-  overlay = mountOverlay(anchor, listing.priceEur, (asin) => {
-    if (!overlayData) return;
-    overlayData = { ...overlayData, confirmedAsin: asin };
-    overlay?.update(overlayData);
-    void browser.storage.local.set({ [`sel:${listing.id}`]: asin }).catch(() => undefined);
-  });
-  void lookup(listing, searchUrl);
+  const mount = (anchor: Element): void => {
+    const searchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(listing.title)}`;
+    console.log("[whg] badge anchor", `${anchor.tagName}.${anchor.getAttribute("data-testid") ?? ""}`);
+    overlay = mountOverlay(anchor, listing.priceEur, (asin) => {
+      if (!overlayData) return;
+      overlayData = { ...overlayData, confirmedAsin: asin };
+      overlay?.update(overlayData);
+      void browser.storage.local.set({ [`sel:${listing.id}`]: asin }).catch(() => undefined);
+    });
+    void lookup(listing, searchUrl);
+  };
+
+  const startedAt = Date.now();
+  const hrefAtStart = location.href;
+  const tryAnchor = (): void => {
+    if (location.href !== hrefAtStart) return; // SPA navigated away
+    const anchor = pickAnchor();
+    if (anchor) {
+      mount(anchor);
+      return;
+    }
+    if (Date.now() - startedAt < ANCHOR_WAIT_MS) {
+      setTimeout(tryAnchor, ANCHOR_POLL_MS);
+      return;
+    }
+    console.warn("[whg] no anchor element found — badge not rendered");
+  };
+  tryAnchor();
 }
 
 async function lookup(listing: Listing, searchUrl: string): Promise<void> {
