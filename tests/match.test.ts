@@ -45,13 +45,14 @@ describe("searchQueryFor", () => {
 });
 
 describe("relevance", () => {
-  it("vetoes different chip generations (M4 Max vs M5 Max)", () => {
+  it("vetoes mismatched RAM capacity (128 GB vs 36 GB)", () => {
+    expect(relevance("Apple Mac Studio M4 Max 128 GB RAM - 2 TB SSD", "Apple Mac Studio mit Apple M5 Max Chip, 36 GB")).toBe(0);
     expect(relevance("Apple Mac Studio M4 Max 128 GB RAM - 2 TB SSD", "Apple Mac Studio mit Apple M5 Max Chip - Silber")).toBe(0);
   });
-  it("keeps same generation", () => {
-    expect(relevance("Apple Mac Studio M4 Max 128 GB", "Apple Mac Studio mit M4 Max Chip")).toBeGreaterThan(0.5);
+  it("compares across generations when capacity matches", () => {
+    expect(relevance("Apple Mac Studio M4 Max 128 GB RAM", "Apple Mac Studio mit Apple M5 Max Chip, 128 GB")).toBeGreaterThan(0.5);
   });
-  it("ignores veto when either side lacks chip tokens", () => {
+  it("ignores veto when either side lacks a GB capacity", () => {
     expect(relevance("iPhone 13 128GB Mitternacht", "Apple iPhone 13, 128GB, Mitternacht")).toBeGreaterThan(0.9);
   });
 });

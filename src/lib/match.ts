@@ -41,8 +41,17 @@ function weight(token: string): number {
   // Numbers (sizes, model numbers) count double.
   return /\d/.test(token) ? 2 : 1;
 }
-/** Chip-generation tokens: "m1"…"m5", "m4", "m4x" style model codes. */
-const MODEL_TOKEN = /^m\d+$/;
+/** Memory capacities: numbers directly followed by "gb" (RAM on desktops). */
+function capacitiesGb(text: string): string[] {
+  const tokens = tokenize(text);
+  const caps: string[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    if (/^\d+$/.test(tokens[i]) && tokens[i + 1] === "gb") caps.push(tokens[i]);
+    const merged = tokens[i].match(/^(\d+)gb$/);
+    if (merged) caps.push(merged[1]);
+  }
+  return caps;
+}
 
 /**
  * Symmetric relevance: the better of "query covered by candidate" and
@@ -50,13 +59,14 @@ const MODEL_TOKEN = /^m\d+$/;
  * mit M5 Max Chip"), willhaben titles spec-laden — one-way overlap punishes
  * the true product when the listing lists specs Amazon omits.
  *
- * Generation veto: a Mac Studio M4 Max is NOT a Mac Studio M5 Max. When both
- * sides carry chip tokens (m1…m5) and none match, relevance is 0.
+ * Capacity veto: a 128 GB machine is NOT comparable to a 36 GB one, whatever
+ * the generation — the RAM size is the product identity for desktops.
+ * (M4 vs M5 is comparable per product decision; GB size is not.)
  */
 export function relevance(a: string, b: string): number {
-  const aModels = tokenize(a).filter((t) => MODEL_TOKEN.test(t));
-  const bModels = tokenize(b).filter((t) => MODEL_TOKEN.test(t));
-  if (aModels.length > 0 && bModels.length > 0 && !aModels.some((t) => bModels.includes(t))) {
+  const aCaps = capacitiesGb(a);
+  const bCaps = capacitiesGb(b);
+  if ((aCaps.length > 0 || bCaps.length > 0) && !aCaps.some((c) => bCaps.includes(c))) {
     return 0;
   }
   return Math.max(scoreMatch(a, b), scoreMatch(b, a));
