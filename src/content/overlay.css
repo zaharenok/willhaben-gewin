@@ -66,7 +66,22 @@
   color: #000;
 }
 
-.whg-fallback { background: #ffd23f; }
+.whg-fallback, .whg-nomatch {
+  background: #ffd23f;
+  display: inline-block;
+  border: 2px solid #000;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-weight: 700;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.whg-nomatch a {
+  color: #000;
+  text-decoration: underline;
+  font-weight: 800;
+}
+.whg-nomatch a:hover { background: #fff; }
 
 .whg-spin {
   display: inline-block;

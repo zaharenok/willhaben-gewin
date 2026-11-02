@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { t } from "../src/lib/i18n";
 
-const KEYS = ["badgeNew", "cheaper", "costlier", "chooseTitle", "blockedHint", "openSearch"] as const;
+const KEYS = ["badgeNew", "cheaper", "costlier", "chooseTitle", "blockedHint", "openSearch", "openGoogle", "noMatch"] as const;
 
 describe("t", () => {
   it("returns German by default (jsdom navigator.language = en-US → en)", () => {

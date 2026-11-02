@@ -83,12 +83,17 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
       return;
     }
     const priced = data.candidates.filter((c) => c.priceEur !== null);
+    const googleUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(new URL(data.searchUrl).searchParams.get("k") ?? "")}`;
     if (data.candidates.length === 0) {
-      root.innerHTML = `<a class="whg-badge whg-fallback" href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">🤷 ${esc(t("noMatch"))} → ${esc(t("openSearch"))}</a>`;
+      root.innerHTML =
+        `<span class="whg-nomatch">🤷 ${esc(t("noMatch"))} → <a href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">${esc(t("openSearch"))}</a> · ` +
+        `<a href="${googleUrl}" target="_blank" rel="noopener noreferrer">${esc(t("openGoogle"))}</a></span>`;
       return;
     }
     if (priced.length === 0) {
-      root.innerHTML = `<a class="whg-badge whg-fallback" href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">${usedText}⚠ ${esc(t("blockedHint"))} → ${esc(t("openSearch"))}</a>`;
+      root.innerHTML =
+        `<span class="whg-nomatch">${usedText}⚠ ${esc(t("blockedHint"))} → <a href="${esc(data.searchUrl)}" target="_blank" rel="noopener noreferrer">${esc(t("openSearch"))}</a> · ` +
+        `<a href="${googleUrl}" target="_blank" rel="noopener noreferrer">${esc(t("openGoogle"))}</a></span>`;
       return;
     }
     const selected = selectedCandidate(data, priced);

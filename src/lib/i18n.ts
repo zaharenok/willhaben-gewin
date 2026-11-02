@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "loadingHint" | "appleRefurb";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb";
 
 type Lang = "de" | "en" | "ru";
 
@@ -14,6 +14,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     openSearch: "Suche öffnen",
     loadingHint: "Amazon-Preisvergleich erscheint hier",
     noMatch: "Kein passendes Angebot gefunden",
+    openGoogle: "Google Shopping",
     appleRefurb: "Apple Refurbished",
   },
   en: {
@@ -25,6 +26,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     chooseTitle: "Choose the product",
     blockedHint: "Amazon blocked the request",
     openSearch: "Open search",
+    openGoogle: "Google Shopping",
     loadingHint: "Amazon price comparison will appear here",
     noMatch: "No matching offer found",
     appleRefurb: "Apple Refurbished",
@@ -38,6 +40,7 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     chooseTitle: "Выберите товар",
     blockedHint: "Amazon заблокировал запрос",
     openSearch: "Открыть поиск",
+    openGoogle: "Google Shopping",
     loadingHint: "Здесь появится сравнение цен с Amazon",
     noMatch: "Подходящее предложение не найдено",
     appleRefurb: "Apple Refurbished",
@@ -48,7 +51,6 @@ function detectLang(navigatorLanguage: string): Lang {
   const base = navigatorLanguage.toLowerCase().split("-")[0];
   return base === "en" || base === "ru" ? base : "de";
 }
-
 /** UI string for a key; picks DE/EN/RU by navigator language, fallback DE. */
 export function t(key: MsgKey): string {
   const lang = typeof navigator !== "undefined" ? detectLang(navigator.language) : "de";
