@@ -9,6 +9,7 @@ import {
 } from "../lib/cache";
 import type { Listing } from "../lib/extract-willhaben";
 import { rankCandidates, searchQueryFor } from "../lib/match";
+import { parseAppleRefurb } from "../lib/parse-apple";
 import { detectBlock, parseAmazonSearch, type AmazonItem } from "../lib/parse-amazon";
 import type { SearchRequest, SearchResponse, TabParseResponse } from "../lib/protocol";
 
@@ -18,6 +19,17 @@ const MIN_FETCH_INTERVAL_MS = 3000;
 const CANDIDATES = 3;
 /** Weighted token overlap a candidate needs to count as the same product. */
 const MIN_MATCH_SCORE = 0.5;
+const APPLE_REFURB_URL = "https://www.apple.com/at/shop/refurbished/";
+/** Listing titles that make sense to look up in Apple's Refurbished Store. */
+const APPLE_HINT = /(apple|macbook|imac|mac\s?mini|mac\s?studio|mac\s?pro|iphone|ipad)/i;
+/** Refurb category for a listing title. */
+function appleRefurbPath(title: string): string | null {
+  if (!APPLE_HINT.test(title)) return null;
+  if (/iphone/i.test(title)) return "iphone";
+  if (/ipad/i.test(title)) return "ipad";
+  if (APPLE_HINT.test(title)) return "mac";
+  return null;
+}
 
 const storage: CacheStorage = {
   get: async (key) => (await browser.storage.local.get(key))[key],
@@ -133,7 +145,17 @@ async function searchViaHiddenTab(request: SearchRequest): Promise<SearchRespons
     return { status: "blocked" };
   } finally {
     await browser.tabs.remove(tabId).catch(() => undefined);
-  }
+}
+}
+
+async function searchAppleRefurb(request: SearchRequest, path: string): Promise<SearchResponse> {
+  const res = await fetch(`${APPLE_REFURB_URL}${path}`, { credentials: "omit" });
+  const html = await res.text();
+  console.log("[whg:bg] apple refurb fetch", { status: res.status, bytes: html.length });
+  if (!res.ok) return { status: "error", message: `apple refurb HTTP ${res.status}` };
+  const items: AmazonItem[] = parseAppleRefurb(html);
+  console.log("[whg:bg] apple refurb parsed", items.length, "items");
+  return buildResponse(request, items);
 }
 
 async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
@@ -169,12 +191,29 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
     } catch (error) {
       console.error("[whg:bg] hidden tab threw", error);
     }
-    if (viaTab?.status === "ok") {
-      // Even a real-DOM parse can legitimately find no offers — still show
-      // it, but a priceless result is never worth a 24 h cache entry.
-      if (viaTab.stats.min !== null) await setCached(storage, key, viaTab, TTL_OK_MS);
-      return viaTab;
+    const amazonOk = direct?.status === "ok" ? direct : viaTab?.status === "ok" ? viaTab : null;
+    if (amazonOk && amazonOk.candidates.length > 0) {
+      if (amazonOk.stats.min !== null) await setCached(storage, key, amazonOk, TTL_OK_MS);
+      return amazonOk;
     }
+
+    // Apple Refurbished Store: past generations live there, not on Amazon.
+    const applePath = appleRefurbPath(request.title);
+    if (applePath) {
+      console.log("[whg:bg] amazon found nothing relevant, trying apple refurb", applePath);
+      try {
+        const apple = await withRateLimit(() => searchAppleRefurb(request, applePath));
+        if (apple.status === "ok" && apple.candidates.length > 0) {
+          await setCached(storage, key, apple, TTL_OK_MS);
+          return apple;
+        }
+        console.log("[whg:bg] apple refurb yielded no relevant items");
+      } catch (error) {
+        console.error("[whg:bg] apple refurb threw", error);
+      }
+    }
+
+    if (amazonOk) return amazonOk; // honest "no match" with empty candidates
 
     // Only a definitive block (detected on the direct path) is worth caching.
     if (direct?.status === "blocked") {

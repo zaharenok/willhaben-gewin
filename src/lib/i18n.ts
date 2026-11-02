@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "loadingHint";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "loadingHint" | "appleRefurb";
 
 type Lang = "de" | "en" | "ru";
 
@@ -6,35 +6,41 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
   de: {
     badgeUsed: "Willhaben",
     badgeNew: "Neupreis auf Amazon",
+    badgeRefurb: "Refurbished bei Apple",
     cheaper: "günstiger",
     costlier: "teurer",
     chooseTitle: "Artikel wählen",
     blockedHint: "Amazon hat die Anfrage blockiert",
     openSearch: "Suche öffnen",
     loadingHint: "Amazon-Preisvergleich erscheint hier",
-    noMatch: "Kein passendes Angebot auf Amazon gefunden",
+    noMatch: "Kein passendes Angebot gefunden",
+    appleRefurb: "Apple Refurbished",
   },
   en: {
     badgeUsed: "Willhaben",
     badgeNew: "New on Amazon",
+    badgeRefurb: "Apple Refurbished",
     cheaper: "cheaper",
     costlier: "more expensive",
     chooseTitle: "Choose the product",
     blockedHint: "Amazon blocked the request",
     openSearch: "Open search",
     loadingHint: "Amazon price comparison will appear here",
-    noMatch: "No matching product found on Amazon",
+    noMatch: "No matching offer found",
+    appleRefurb: "Apple Refurbished",
   },
   ru: {
     badgeUsed: "Willhaben",
     badgeNew: "Новый на Amazon",
+    badgeRefurb: "Apple Refurbished",
     cheaper: "дешевле",
     costlier: "дороже",
     chooseTitle: "Выберите товар",
     blockedHint: "Amazon заблокировал запрос",
     openSearch: "Открыть поиск",
     loadingHint: "Здесь появится сравнение цен с Amazon",
-    noMatch: "Подходящий товар на Amazon не найден",
+    noMatch: "Подходящее предложение не найдено",
+    appleRefurb: "Apple Refurbished",
   },
 };
 

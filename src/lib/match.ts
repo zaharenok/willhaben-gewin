@@ -51,7 +51,13 @@ const LINE_WORDS: Record<string, true> = {
   macbook: true, studio: true, mini: true, imac: true,
 };
 
-
+/** Accessory markers: a €12 sleeve is not a price reference for a laptop. */
+const ACCESSORY_WORDS: Record<string, true> = {
+  hülle: true, case: true, tasche: true, sleeve: true,
+  folie: true, staender: true, "ständer": true, zubehör: true, ladegerät: true,
+  ladekabel: true, kabel: true, halterung: true, kompatibel: true, etui: true,
+  staubschutz: true,
+};
 function capacitiesGb(text: string): string[] {
   const tokens = tokenize(text);
   const caps: string[] = [];
@@ -62,17 +68,12 @@ function capacitiesGb(text: string): string[] {
   }
   return caps;
 }
-
 /**
  * Symmetric relevance: the better of "query covered by candidate" and
  * "candidate covered by query". Amazon titles are short ("Apple Mac Studio
  * mit M5 Max Chip"), willhaben titles spec-laden — one-way overlap punishes
  * the true product when the listing lists specs Amazon omits.
- *
- * Capacity veto: a 128 GB machine is NOT comparable to a 36 GB one, whatever
- * the generation — the RAM size is the product identity for desktops.
- * (M4 vs M5 is comparable per product decision; GB size is not.)
- */
+*/
 export function relevance(a: string, b: string): number {
   // Line veto: "mac studio" vs "macbook pro" are different products even
   // with the same chip and RAM — a shared line word is required.
@@ -81,6 +82,11 @@ export function relevance(a: string, b: string): number {
   if (aLines.length > 0 && bLines.length > 0 && !aLines.some((l) => bLines.includes(l))) {
     return 0;
   }
+  // Accessory veto: a sleeve/case/stand that MERELY fits the product is not
+  // the product — unless the listing itself sells that accessory.
+  const aAcc = tokenize(a).some((t) => ACCESSORY_WORDS[t]);
+  const bAcc = tokenize(b).some((t) => ACCESSORY_WORDS[t]);
+  if (bAcc && !aAcc) return 0;
   // Capacity veto: a 128 GB machine is NOT comparable to a 36 GB one,
   // whatever the generation — RAM size is part of the product identity.
   const aCaps = capacitiesGb(a);

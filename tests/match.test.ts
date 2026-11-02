@@ -55,6 +55,12 @@ describe("relevance", () => {
   it("keeps same line (Mac Studio vs Mac Studio)", () => {
     expect(relevance("Apple Mac Studio M1 Max 32 GB", "Apple Mac Studio mit M1 Max Chip, 32 GB")).toBeGreaterThan(0.5);
   });
+  it("vetoes accessories that merely fit the product", () => {
+    expect(relevance("Macbook Air M4 2025", "Fintie Hülle Kompatibel mit MacBook Air 13,6 Zoll M5 M4 M3 M2, Transparent")).toBe(0);
+  });
+  it("keeps accessory listings when the listing IS the accessory", () => {
+    expect(relevance("Hülle für MacBook Air M4", "Fintie Hülle Kompatibel mit MacBook Air M4")).toBeGreaterThan(0.3);
+  });
   it("compares across generations when capacity matches", () => {
     expect(relevance("Apple Mac Studio M4 Max 128 GB RAM", "Apple Mac Studio mit Apple M5 Max Chip, 128 GB")).toBeGreaterThan(0.5);
   });

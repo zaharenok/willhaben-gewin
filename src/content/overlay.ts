@@ -46,7 +46,8 @@ function renderPanel(data: OverlayData, selected: AmazonItem): string {
     .map((c) => {
       const cls = c.asin === selected.asin ? "whg-row whg-selected" : "whg-row";
       const price = c.priceEur !== null ? formatEur(c.priceEur) : "—";
-      return `<button type="button" class="${cls}" data-asin="${esc(c.asin)}"><span class="whg-row-title">${esc(c.title)}</span><span class="whg-row-price">${esc(price)}</span></button>`;
+      const source = c.source === "apple" ? ` <span class="whg-source">${esc(t("appleRefurb"))}</span>` : "";
+      return `<button type="button" class="${cls}" data-asin="${esc(c.asin)}"><span class="whg-row-title">${esc(c.title)}${source}</span><span class="whg-row-price">${esc(price)}</span></button>`;
     })
     .join("");
   return `<div class="whg-panel"><div class="whg-panel-title">${esc(t("chooseTitle"))}</div>${rows}</div>`;
@@ -110,7 +111,7 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
     root.innerHTML =
       `<button type="button" class="whg-badge whg-main" data-whg-toggle>` +
       diff +
-      `<span class="whg-sub">${usedText}${prefix}${esc(t("badgeNew"))}: ab ${esc(minText)}</span>` +
+      `<span class="whg-sub">${usedText}${prefix}${esc(priced.every((c) => c.source === "apple") ? t("badgeRefurb") : t("badgeNew"))}: ab ${esc(minText)}</span>` +
       `</button>` +
       panel;
     if (panelOpen) {
