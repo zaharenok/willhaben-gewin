@@ -1,4 +1,5 @@
 import type { AmazonItem } from "./parse-amazon";
+import type { GoogleItem } from "./parse-google";
 
 export interface SearchRequest {
   type: "SEARCH_AMAZON";
@@ -23,3 +24,13 @@ export type SearchResponse =
 export type TabParseResponse =
   | { type: "PARSE_RESULT"; status: "ok"; items: AmazonItem[] }
   | { type: "PARSE_RESULT"; status: "blocked" };
+
+/** Ask the google-shopping relay content script to parse its page. */
+export interface GoogleParseRequest {
+  type: "PARSE_GOOGLE_SHOPPING";
+}
+
+/** Reply of the google-shopping relay content script to PARSE_GOOGLE_SHOPPING. */
+export type GoogleParseResponse =
+  | { type: "GOOGLE_RESULT"; status: "ok"; items: GoogleItem[] }
+  | { type: "GOOGLE_RESULT"; status: "blocked" };

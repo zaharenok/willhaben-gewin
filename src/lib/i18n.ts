@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "badgeGoogle" | "badgeCompare" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb";
 
 type Lang = "de" | "en" | "ru";
 
@@ -7,6 +7,8 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     badgeUsed: "Willhaben",
     badgeNew: "Neupreis auf Amazon",
     badgeRefurb: "Refurbished bei Apple",
+    badgeGoogle: "Preis laut Google Shopping",
+    badgeCompare: "Preisvergleich",
     cheaper: "günstiger",
     costlier: "teurer",
     chooseTitle: "Artikel wählen",
@@ -21,6 +23,8 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     badgeUsed: "Willhaben",
     badgeNew: "New on Amazon",
     badgeRefurb: "Apple Refurbished",
+    badgeGoogle: "Price on Google Shopping",
+    badgeCompare: "Price comparison",
     cheaper: "cheaper",
     costlier: "more expensive",
     chooseTitle: "Choose the product",
@@ -35,6 +39,8 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     badgeUsed: "Willhaben",
     badgeNew: "Новый на Amazon",
     badgeRefurb: "Apple Refurbished",
+    badgeGoogle: "Цена в Google Shopping",
+    badgeCompare: "Сравнение цен",
     cheaper: "дешевле",
     costlier: "дороже",
     chooseTitle: "Выберите товар",

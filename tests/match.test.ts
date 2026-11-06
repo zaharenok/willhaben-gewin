@@ -58,6 +58,11 @@ describe("relevance", () => {
   it("vetoes accessories that merely fit the product", () => {
     expect(relevance("Macbook Air M4 2025", "Fintie Hülle Kompatibel mit MacBook Air 13,6 Zoll M5 M4 M3 M2, Transparent")).toBe(0);
   });
+  it("vetoes stands/hubs that merely fit the product (Satechi vs Mac Studio)", () => {
+    expect(relevance("Apple Mac Studio M1 Max - 32 GB RAM / 1 TB SSD", "Satechi Stand&Hub für Mac Mini / Studio Silber")).toBe(0);
+    // Same veto without a capacity on either side — isolates the `stand` word.
+    expect(relevance("Apple Mac Studio M1 Max", "Satechi Stand&Hub für Mac Mini / Studio Silber")).toBe(0);
+  });
   it("keeps accessory listings when the listing IS the accessory", () => {
     expect(relevance("Hülle für MacBook Air M4", "Fintie Hülle Kompatibel mit MacBook Air M4")).toBeGreaterThan(0.3);
   });

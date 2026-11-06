@@ -1,5 +1,5 @@
 import css from "./overlay.css?raw";
-import { t } from "../lib/i18n";
+import { t, type MsgKey } from "../lib/i18n";
 import type { AmazonItem } from "../lib/parse-amazon";
 import { amazonProductUrl } from "../lib/amazon-links";
 import { computeSavings, formatEur } from "../lib/savings";
@@ -42,15 +42,32 @@ function selectedCandidate(data: OverlayData, priced: AmazonItem[]): AmazonItem 
   return priced.find((c) => c.priceEur === data.stats.median) ?? priced[0];
 }
 
+/** Badge sub-label by the priced candidates' source mix. */
+function badgeLabelKey(priced: AmazonItem[]): MsgKey {
+  const sources = priced.map((c) => c.source ?? "amazon");
+  if (sources.every((s) => s === "google")) return "badgeGoogle";
+  if (sources.every((s) => s === "apple")) return "badgeRefurb";
+  if (sources.every((s) => s === "amazon")) return "badgeNew";
+  return "badgeCompare";
+}
 function renderPanel(data: OverlayData, selected: AmazonItem): string {
   const rows = data.candidates
     .map((c) => {
       const cls = c.asin === selected.asin ? "whg-row whg-selected" : "whg-row";
       const price = c.priceEur !== null ? formatEur(c.priceEur) : "—";
-      const source = c.source === "apple" ? ` <span class="whg-source">${esc(t("appleRefurb"))}</span>` : "";
-      const buy = c.source === "apple"
-        ? `<a class="whg-buy" href="${esc(c.url?.startsWith("http") ? c.url : `https://www.apple.com${c.url ?? "/at/shop/refurbished/mac"}`)}" target="_blank" rel="noopener noreferrer" title="${esc(c.title)}">↗</a>`
-        : `<a class="whg-buy" href="${esc(amazonProductUrl(c.asin))}" target="_blank" rel="noopener noreferrer" title="${esc(c.title)}">Amazon↗</a>`;
+      const tag =
+        c.source === "apple"
+          ? esc(t("appleRefurb"))
+          : c.source === "google"
+            ? esc(c.shop ?? "Google Shopping")
+            : "";
+      const source = tag ? ` <span class="whg-source">${tag}</span>` : "";
+      const buy =
+        c.source === "google"
+          ? `<a class="whg-buy" href="${esc(c.url?.startsWith("http") ? c.url : `https://www.google.com/search?udm=28&q=${encodeURIComponent(c.title)}`)}" target="_blank" rel="noopener noreferrer" title="${esc(c.title)}">${esc(c.shop ?? "Google")}↗</a>`
+          : c.source === "apple"
+            ? `<a class="whg-buy" href="${esc(c.url?.startsWith("http") ? c.url : `https://www.apple.com${c.url ?? "/at/shop/refurbished/mac"}`)}" target="_blank" rel="noopener noreferrer" title="${esc(c.title)}">↗</a>`
+            : `<a class="whg-buy" href="${esc(amazonProductUrl(c.asin))}" target="_blank" rel="noopener noreferrer" title="${esc(c.title)}">Amazon↗</a>`;
       return `<div class="${cls}" data-asin="${esc(c.asin)}"><span class="whg-row-title">${esc(c.title)}${source}</span><span class="whg-row-price">${esc(price)}</span>${buy}</div>`;
     })
     .join("");
@@ -87,7 +104,7 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
       return;
     }
     const priced = data.candidates.filter((c) => c.priceEur !== null);
-    const googleUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(new URL(data.searchUrl).searchParams.get("k") ?? "")}`;
+    const googleUrl = `https://www.google.com/search?udm=28&q=${encodeURIComponent(new URL(data.searchUrl).searchParams.get("k") ?? "")}`;
     if (data.candidates.length === 0 || priced.length === 0) {
       const hint = data.candidates.length === 0 ? `🤷 ${esc(t("noMatch"))}` : `${usedText}⚠ ${esc(t("blockedHint"))}`;
       const linkPanel = panelOpen
@@ -112,6 +129,21 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
     const confirmed = data.confirmedAsin === selected.asin;
     const minText = data.stats.min !== null ? formatEur(data.stats.min) : "";
 
+    // The winning side gets the chip: used cheaper → highlight the Willhaben
+    // price; the new price cheaper → highlight the "ab" price.
+    const usedWins =
+      data.listingPriceEur !== null && selected.priceEur !== null && selected.priceEur > data.listingPriceEur;
+    const newWins =
+      data.listingPriceEur !== null && selected.priceEur !== null && selected.priceEur < data.listingPriceEur;
+    const win = (text: string): string => `<span class="whg-win">${text}</span>`;
+    const usedPart =
+      usedPrice === null
+        ? ""
+        : usedWins
+          ? `${esc(t("badgeUsed"))} ${win(`${esc(formatEur(usedPrice))}`)} → `
+          : usedText;
+    const minPart = minText === "" ? "" : newWins ? `ab ${win(esc(minText))}` : `ab ${esc(minText)}`;
+
     // diffEur = amazon − willhaben: positive → the used listing is cheaper.
     let diff = "";
     if (data.listingPriceEur !== null && selected.priceEur !== null) {
@@ -128,7 +160,7 @@ export function mountOverlay(anchor: Element, listingPriceEur: number | null, on
     root.innerHTML =
       `<button type="button" class="whg-badge whg-main" data-whg-toggle>` +
       diff +
-      `<span class="whg-sub">${usedText}${prefix}${esc(priced.every((c) => c.source === "apple") ? t("badgeRefurb") : t("badgeNew"))}: ab ${esc(minText)}</span>` +
+      `<span class="whg-sub">${usedPart}${prefix}${esc(t(badgeLabelKey(priced)))}: ${minPart}</span>` +
       `</button>` +
       panel;
     if (panelOpen) {

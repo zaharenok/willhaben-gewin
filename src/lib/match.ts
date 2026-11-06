@@ -53,7 +53,7 @@ const LINE_WORDS: Record<string, true> = {
 
 /** Accessory markers: a €12 sleeve is not a price reference for a laptop. */
 const ACCESSORY_WORDS: Record<string, true> = {
-  hülle: true, case: true, tasche: true, sleeve: true,
+  hülle: true, case: true, tasche: true, sleeve: true, stand: true,
   folie: true, staender: true, "ständer": true, zubehör: true, ladegerät: true,
   ladekabel: true, kabel: true, halterung: true, kompatibel: true, etui: true,
   staubschutz: true,

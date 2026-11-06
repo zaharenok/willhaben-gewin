@@ -4,8 +4,10 @@ export interface AmazonItem {
   asin: string;
   title: string;
   priceEur: number | null;
-  source?: "amazon" | "apple";
-  /** Absolute product URL when the source provides one (apple refurb). */
+  source?: "amazon" | "apple" | "google";
+  /** Merchant name for google items; shown as the panel tag. */
+  shop?: string;
+  /** Absolute product URL when the source provides one (apple refurb, google). */
   url?: string;
 }
 

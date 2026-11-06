@@ -52,6 +52,16 @@
   color: #3d002f;
 }
 
+/* chip backing under the winning price */
+.whg-win {
+  background: #fff;
+  border: 1.5px solid #000;
+  border-radius: 6px;
+  padding: 0 5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 /* loading placeholder */
 .whg-loading {
   cursor: default;
