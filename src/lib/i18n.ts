@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "badgeGoogle" | "badgeCompare" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "badgeGoogle" | "badgeCompare" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb" | "listTooltip" | "listModeLabel" | "listModeHint";
 
 type Lang = "de" | "en" | "ru";
 
@@ -18,6 +18,9 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     noMatch: "Kein passendes Angebot gefunden",
     openGoogle: "Google Shopping",
     appleRefurb: "Apple Refurbished",
+    listTooltip: "Neupreis-Spanne auf Amazon",
+    listModeLabel: "Listenmodus",
+    listModeHint: "Gewinn/Verlust bei jedem Inserat im Suchergebnis",
   },
   en: {
     badgeUsed: "Willhaben",
@@ -34,6 +37,9 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     loadingHint: "Amazon price comparison will appear here",
     noMatch: "No matching offer found",
     appleRefurb: "Apple Refurbished",
+    listTooltip: "New-price range on Amazon",
+    listModeLabel: "List mode",
+    listModeHint: "Gain/loss on every listing in the results",
   },
   ru: {
     badgeUsed: "Willhaben",
@@ -50,6 +56,9 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     loadingHint: "Здесь появится сравнение цен с Amazon",
     noMatch: "Подходящее предложение не найдено",
     appleRefurb: "Apple Refurbished",
+    listTooltip: "Диапазон новых цен на Amazon",
+    listModeLabel: "Режим списка",
+    listModeHint: "Выигрыш/проигрыш у каждого объявления в выдаче",
   },
 };
 

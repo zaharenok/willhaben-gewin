@@ -18,6 +18,8 @@ The original idea (Amazon → Willhaben price overlay) is deferred and kept in [
 
 No backend, no Amazon account — everything runs in the browser.
 
+**List mode (optional)** — the toolbar popup has a "List mode" toggle that annotates every search-result row with a small win/loss pill: green `−€ …` when the listing undercuts the Amazon new price, red `+€ …` when it overpays (median candidate, unconfirmed). Pills fill in progressively (rate limit); the setting applies live, no reload needed.
+
 ## Roadmap
 
 - [x] Extract listing (title, price, condition) from a live willhaben.at page
@@ -53,6 +55,8 @@ Die ursprüngliche Idee (Amazon → Willhaben) ist zurückgestellt und liegt unt
 
 **So funktioniert es (MVP):** Anzeige extrahieren (Titel, Preis, Zustand) → Amazon-Suche im Background-Worker (Rate-Limit, 24 h Cache) → Treffer-Matching + Bestätigung durch den Nutzer (Top-3-Panel, Median-Kandidat nur als Vorschau `≈`) → Badge neben dem Anzeigenpreis (Shadow DOM) → bei Blockade: Retry über einen Hintergrund-Tab, erst wenn auch das scheitert → Fallback-Link zur Amazon-Suche. Kein Backend, kein Amazon-Konto.
 
+**Listenmodus (optional)** — im Toolbar-Popup schaltet „Listenmodus" eine kleine Gewinn/Verlust-Pille an jedem Suchergebnis ein: grün `−€ …`, wenn das Inserat unter dem Amazon-Neupreis liegt, rot `+€ …` bei Überzahlung (Median-Kandidat, unbestätigt). Die Pillen füllen sich nach und nach (Rate-Limit); die Einstellung greift sofort, ohne Reload.
+
 **Roadmap:** `- [x]` Anzeige extrahieren · Amazon-Suche · Matching + Bestätigung · Overlay-Badge · Cache/Fallback + Headless-E2E.
 
 **Entwicklung:** `pnpm install` · `pnpm dev` · `pnpm build` → `dist/` · `pnpm test`. Stack: TypeScript, Vite + `vite-plugin-web-extension`, `webextension-polyfill`, vitest.
@@ -70,6 +74,8 @@ Chrome-расширение (Manifest V3), которое на каждой ст
 Исходная идея (Amazon → Willhaben) отложена и лежит в [`ideas/amazon-to-willhaben/`](ideas/amazon-to-willhaben/).
 
 **Как работает (MVP):** извлечение объявления (заголовок, цена, состояние) → поиск Amazon в background-воркере (rate-limit, кэш 24 ч) → матчинг заголовка + обязательное подтверждение пользователем (панель топ-3, медианный кандидат только как предпросмотр `≈`) → бейдж рядом с ценой объявления (Shadow DOM) → при блокировке: повтор через фоновую вкладку Amazon, и только если и это не вышло — фолбэк-ссылка на поиск. Без бэкенда, без аккаунта Amazon.
+
+**Режим списка (опционально)** — во всплывающем окне тумблер «Режим списка» включает маленькую плашку выигрыш/проигрыш у каждого результата поиска: зелёная `−€ …`, если объявление дешевле нового на Amazon, красная `+€ …` при переплате (медианный кандидат, без подтверждения). Плашки заполняются постепенно (rate-limit); настройка применяется сразу, без перезагрузки.
 
 **Роадмап:** `- [x]` извлечение объявления · поиск Amazon · матчинг + подтверждение · оверлей-бейдж · кэш/фолбэк + headless-e2e.
 

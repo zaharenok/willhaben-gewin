@@ -4,9 +4,13 @@ import { searchQueryFor } from "../lib/match";
 import { amazonSearchUrl } from "../lib/amazon-links";
 import type { SearchRequest, SearchResponse } from "../lib/protocol";
 import { mountOverlay, type OverlayData, type OverlayHandle } from "./overlay";
+import { startListAnnotations, type ListAnnotations } from "./list-badge";
+import { readSettings, SETTINGS_KEY, type Settings } from "../lib/settings";
 
 /** willhaben.at detail pages (SPA: path can change without a page load). */
 const DETAIL_PATH = /^\/iad\/kaufen-und-verkaufen\/d\//;
+/** List pages (search results, categories) — everything under the section except details. */
+const LIST_PATH = /^\/iad\/kaufen-und-verkaufen\//;
 const NAV_POLL_MS = 500;
 /** Give up waiting for the listing price after this long (title-only lookup). */
 const EXTRACT_TIMEOUT_MS = 10_000;
@@ -18,6 +22,7 @@ let observer: MutationObserver | null = null;
 let extractTimer: number | null = null;
 let overlay: OverlayHandle | null = null;
 let overlayData: OverlayData | null = null;
+let listController: ListAnnotations | null = null;
 
 function teardown(): void {
   observer?.disconnect();
@@ -135,15 +140,38 @@ async function lookup(listing: Listing, searchUrl: string): Promise<void> {
   overlay.update(overlayData);
 }
 
+function stopList(): void {
+  listController?.stop();
+  listController = null;
+}
+
+/** Detail pages always show the badge; list pages only when the setting is on. */
+async function applyMode(): Promise<void> {
+  const href = location.href;
+  let settings: Settings;
+  try {
+    settings = await readSettings(browser.storage.local);
+  } catch {
+    settings = { listMode: false };
+  }
+  if (location.href !== href) return; // SPA navigated while reading settings
+  if (DETAIL_PATH.test(location.pathname)) return;
+  if (LIST_PATH.test(location.pathname) && settings.listMode) {
+    if (!listController) listController = startListAnnotations();
+  } else {
+    stopList();
+  }
+}
 function checkNavigation(): void {
   if (location.href === currentHref) return;
   currentHref = location.href;
   teardown();
+  stopList();
   if (!DETAIL_PATH.test(location.pathname)) {
-    console.log("[whg] not a detail page, skipping", location.pathname);
+    console.log("[whg] not a detail page", location.pathname);
+    void applyMode();
     return;
   }
-  console.log("[whg] detail page detected, waiting for listing", location.pathname);
 
   let settled = false;
   let gaveUp = false;
@@ -183,6 +211,12 @@ function checkNavigation(): void {
     }
   }, EXTRACT_TIMEOUT_MS);
 }
+
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local" || !(SETTINGS_KEY in changes)) return;
+  if (DETAIL_PATH.test(location.pathname)) return;
+  void applyMode();
+});
 
 checkNavigation();
 setInterval(checkNavigation, NAV_POLL_MS);

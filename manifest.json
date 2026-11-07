@@ -1,8 +1,9 @@
 {
   "name": "Willhaben Gewin",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "manifest_version": 3,
   "description": "Zeigt den Amazon.de-Neupreis direkt beim Willhaben-Inserat",
+  "action": {"default_popup": "src/popup/popup.html"},
   "background": {"service_worker": "src/background/index.ts"},
   "content_scripts": [
     {"matches": ["https://www.willhaben.at/*"], "js": ["src/content/willhaben.ts"]},
