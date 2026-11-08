@@ -66,13 +66,18 @@ const BRAND_WORDS: Record<string, true> = {
   sony: true, panasonic: true, canon: true, nikon: true, bosch: true, makita: true,
   jbl: true, anker: true, logitech: true, nintendo: true,
 };
-function capacitiesGb(text: string): string[] {
+function capacitiesGb(text: string): number[] {
   const tokens = tokenize(text);
-  const caps: string[] = [];
+  const caps: number[] = [];
   for (let i = 0; i < tokens.length; i++) {
-    if (/^\d+$/.test(tokens[i]) && tokens[i + 1] === "gb") caps.push(tokens[i]);
-    const merged = tokens[i].match(/^(\d+)gb$/);
-    if (merged) caps.push(merged[1]);
+    const merged = tokens[i].match(/^(\d+)(gb|tb)$/);
+    if (merged) {
+      caps.push(Number(merged[1]) * (merged[2] === "tb" ? 1024 : 1));
+    } else if (/^\d+$/.test(tokens[i]) && tokens[i + 1] === "gb") {
+      caps.push(Number(tokens[i]));
+    } else if (/^\d+$/.test(tokens[i]) && tokens[i + 1] === "tb") {
+      caps.push(Number(tokens[i]) * 1024);
+    }
   }
   return caps;
 }
@@ -101,8 +106,9 @@ export function relevance(a: string, b: string): number {
   const aAcc = tokenize(a).some((t) => ACCESSORY_WORDS[t]);
   const bAcc = tokenize(b).some((t) => ACCESSORY_WORDS[t]);
   if (bAcc && !aAcc) return 0;
-  // Capacity veto: a 128 GB machine is NOT comparable to a 36 GB one,
-  // whatever the generation — RAM size is part of the product identity.
+  // Capacity veto: a 128 GB machine is NOT comparable to a 36 GB one, and a
+  // 1 TB SSD is not a 2 TB one — size is part of the product identity.
+  // Capacities are normalized to GB, so "2 TB" and "2048 GB" compare equal.
   const aCaps = capacitiesGb(a);
   const bCaps = capacitiesGb(b);
   if ((aCaps.length > 0 || bCaps.length > 0) && !aCaps.some((c) => bCaps.includes(c))) {

@@ -75,6 +75,15 @@ describe("relevance", () => {
   it("ignores veto when either side lacks a GB capacity", () => {
     expect(relevance("iPhone 13 128GB Mitternacht", "Apple iPhone 13, 128GB, Mitternacht")).toBeGreaterThan(0.9);
   });
+  it("vetoes mismatched SSD capacity across units (2 TB listing vs 1 TB candidate)", () => {
+    expect(relevance("Kingston 2 TB SSD NVMe M.2", "Kingston NV2 1TB M.2 2280 NVMe internes SSD")).toBe(0);
+  });
+  it("accepts equal capacity across units (2 TB listing vs 2048 GB candidate)", () => {
+    expect(relevance("Kingston 2 TB SSD NVMe M.2", "Kingston NV3 2048GB M.2 2280 NVMe internes SSD")).toBeGreaterThan(0.3);
+  });
+  it("accepts a matching 2 TB candidate", () => {
+    expect(relevance("Kingston 2 TB SSD NVMe M.2", "Kingston NV3 2TB M.2 2280 NVMe internes SSD")).toBeGreaterThan(0.3);
+  });
 });
 
 describe("rankCandidates with both live fixtures", () => {
