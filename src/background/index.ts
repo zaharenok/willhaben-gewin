@@ -12,7 +12,7 @@ import { rankCandidates, searchQueryFor } from "../lib/match";
 import { parseAppleRefurb } from "../lib/parse-apple";
 import { detectBlock, parseAmazonSearch, type AmazonItem } from "../lib/parse-amazon";
 import type { GoogleItem } from "../lib/parse-google";
-import { isNetworkFetchError } from "../lib/net";
+import { isNetworkFetchError, isTabDragError } from "../lib/net";
 import type { SearchRequest, SearchResponse } from "../lib/protocol";
 
 const SEARCH_URL = "https://www.amazon.de/s?k=";
@@ -156,7 +156,18 @@ async function openRelayTab<T>(
   keep: (liveUrl: string) => boolean,
   emptyWaitMs = 0,
 ): Promise<RelayOutcome<T>> {
-  const tab = await browser.tabs.create({ url, active: false });
+  let tab;
+  try {
+    tab = await browser.tabs.create({ url, active: false });
+  } catch (error) {
+    if (isTabDragError(error)) {
+      // Chrome refuses tab edits while the user drags a tab — transient,
+      // the next lookup opens the hidden tab fine. Degrade, don't error.
+      console.warn("[whg:bg] hidden tab skipped — Chrome refused tab create (tab drag?)");
+      return { status: "error", message: "tabs.create refused" };
+    }
+    throw error;
+  }
   const tabId = tab.id;
   console.log("[whg:bg] hidden tab opened", { tabId, url });
   if (tabId == null) return { status: "error", message: "tabs.create returned no id" };

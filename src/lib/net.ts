@@ -12,3 +12,16 @@ export function isNetworkFetchError(error: unknown): boolean {
     /failed to fetch/i.test(error.message)
   );
 }
+
+/**
+ * Transient Chrome-UI classifier: `tabs.create` throws while the user is
+ * dragging a tab in the strip ("Tabs cannot be edited right now"). The next
+ * lookup creates the hidden tab just fine, so this is a warning-grade miss.
+ */
+export function isTabDragError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    typeof error.message === "string" &&
+    /tabs cannot be edited right now/i.test(error.message)
+  );
+}
