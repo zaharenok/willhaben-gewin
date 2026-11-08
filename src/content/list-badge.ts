@@ -66,6 +66,7 @@ export function startListAnnotations(): ListAnnotations {
         listingId: row.id,
         title: row.title,
         priceEur: row.priceEur,
+        fast: true, // amazon only — a google hidden tab per row is far too slow
       };
       response = (await browser.runtime.sendMessage(request)) as SearchResponse;
     } catch (error) {

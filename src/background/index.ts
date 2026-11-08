@@ -284,7 +284,8 @@ async function searchAppleRefurb(path: string): Promise<RawResult> {
 }
 
 async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
-  const key = cacheKey(request.title.toLowerCase().replace(/\s+/g, " ").trim());
+  const fast = request.fast === true;
+  const key = cacheKey(request.title.toLowerCase().replace(/\s+/g, " ").trim(), fast);
   try {
     const cached = await getCached<SearchResponse>(storage, key);
     if (cached) {
@@ -295,6 +296,8 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
 
     // Google runs in its own hidden tab, serialized behind the amazon fetch
     // by the rate-limit queue; its items merge into whichever base wins.
+    // List-mode fast lookups skip it — a hidden tab per row is far too slow
+    // and would hit the MV3 5-minute handler cap mid-page.
     const directP = withRateLimit(() => searchAmazon(request)).catch((error) => {
       if (isNetworkFetchError(error)) {
         console.warn("[whg:bg] direct fetch: network unavailable (offline/sleep?) — next lookup retries");
@@ -303,7 +306,9 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
       }
       return null;
     });
-    const googleP = withRateLimit(() => searchGoogleShopping(request)).catch((error) => {
+    const googleP: Promise<AmazonItem[]> = fast
+      ? Promise.resolve([])
+      : withRateLimit(() => searchGoogleShopping(request)).catch((error) => {
       if (isNetworkFetchError(error)) {
         console.warn("[whg:bg] google shopping: network unavailable (offline/sleep?) — next lookup retries");
       } else {
@@ -326,14 +331,22 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
     }
     console.log("[whg:bg] direct path failed, trying hidden-tab fallback", direct?.status ?? "fetch error");
 
+    // The hidden tab costs seconds per row — fast (list-mode) lookups skip it
+    // entirely rather than starve the rate-limit queue and hit the MV3
+    // 5-minute handler cap on large pages. A skipped row just shows no pill;
+    // the next visit retries uncached.
     let viaTab: RawResult | null = null;
-    try {
-      viaTab = await withRateLimit(() => searchViaHiddenTab(request));
-    } catch (error) {
-      if (isNetworkFetchError(error)) {
-        console.warn("[whg:bg] hidden tab: network unavailable (offline/sleep?) — next lookup retries");
-      } else {
-        console.error("[whg:bg] hidden tab threw", error);
+    if (fast) {
+      console.log("[whg:bg] fast lookup: skipping hidden-tab fallback");
+    } else {
+      try {
+        viaTab = await withRateLimit(() => searchViaHiddenTab(request));
+      } catch (error) {
+        if (isNetworkFetchError(error)) {
+          console.warn("[whg:bg] hidden tab: network unavailable (offline/sleep?) — next lookup retries");
+        } else {
+          console.error("[whg:bg] hidden tab threw", error);
+        }
       }
     }
 
@@ -347,7 +360,7 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
     }
 
     // Apple Refurbished Store: past generations live there, not on Amazon.
-    const applePath = appleRefurbPath(request.title);
+    const applePath = fast ? null : appleRefurbPath(request.title);
     if (applePath) {
       console.log("[whg:bg] amazon found nothing relevant, trying apple refurb", applePath);
       try {
@@ -400,6 +413,7 @@ browser.runtime.onMessage.addListener((message: unknown) => {
     listingId: message.listingId,
     title: message.title,
     priceEur: "priceEur" in message && typeof message.priceEur === "number" ? message.priceEur : null,
+    fast: (message as { fast?: unknown }).fast === true ? true : undefined,
   };
   console.log("[whg:bg] SEARCH_AMAZON received", { title: request.title, priceEur: request.priceEur });
   return handleSearch(request);

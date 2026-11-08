@@ -6,6 +6,8 @@ export interface SearchRequest {
   listingId: string;
   title: string;
   priceEur: number | null;
+  /** List-mode fast path: amazon only, no google/apple relays (per-row cost). */
+  fast?: boolean;
 }
 
 export interface SearchStats {

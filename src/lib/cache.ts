@@ -10,13 +10,15 @@ export interface CacheStorage {
 export const TTL_OK_MS = 24 * 60 * 60 * 1000; // 24 h for search results
 export const TTL_BLOCKED_MS = 60 * 60 * 1000; // 1 h for blocked responses
 
-/** djb2 hash of the normalized title → stable cache key. */
-export function cacheKey(normTitle: string): string {
+/** djb2 hash of the normalized title → stable cache key.
+ * Fast (list-mode) results get their own prefix: they are amazon-only, and
+ * detail pages must not inherit the reduced candidate set from the cache. */
+export function cacheKey(normTitle: string, fast = false): string {
   let h = 5381;
   for (let i = 0; i < normTitle.length; i++) {
     h = ((h << 5) + h + normTitle.charCodeAt(i)) >>> 0;
   }
-  return `whg7:${h.toString(36)}`;
+  return `${fast ? "whg7f" : "whg7"}:${h.toString(36)}`;
 }
 
 interface Entry {

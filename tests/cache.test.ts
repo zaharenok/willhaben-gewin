@@ -18,6 +18,11 @@ describe("cacheKey", () => {
     expect(cacheKey("iphone 13 128gb")).not.toBe(cacheKey("iphone 14 128gb"));
     expect(cacheKey("iphone 13 128gb")).toMatch(/^whg7:[a-z0-9]+$/);
   });
+
+  it("separates fast (list-mode) results from full lookups", () => {
+    expect(cacheKey("iphone 13 128gb", true)).toMatch(/^whg7f:[a-z0-9]+$/);
+    expect(cacheKey("iphone 13 128gb", true)).not.toBe(cacheKey("iphone 13 128gb"));
+  });
 });
 
 describe("TTL", () => {
