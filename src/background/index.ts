@@ -12,6 +12,7 @@ import { rankCandidates, searchQueryFor } from "../lib/match";
 import { parseAppleRefurb } from "../lib/parse-apple";
 import { detectBlock, parseAmazonSearch, type AmazonItem } from "../lib/parse-amazon";
 import type { GoogleItem } from "../lib/parse-google";
+import { isNetworkFetchError } from "../lib/net";
 import type { SearchRequest, SearchResponse } from "../lib/protocol";
 
 const SEARCH_URL = "https://www.amazon.de/s?k=";
@@ -252,7 +253,11 @@ async function searchGoogleShopping(request: SearchRequest): Promise<AmazonItem[
     console.log("[whg:bg] google shopping mapped", items.length, "candidates");
     return items;
   } catch (error) {
-    console.error("[whg:bg] google shopping threw", error);
+    if (isNetworkFetchError(error)) {
+      console.warn("[whg:bg] google shopping: network unavailable (offline/sleep?) — next lookup retries");
+    } else {
+      console.error("[whg:bg] google shopping threw", error);
+    }
     return [];
   }
 }
@@ -280,11 +285,19 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
     // Google runs in its own hidden tab, serialized behind the amazon fetch
     // by the rate-limit queue; its items merge into whichever base wins.
     const directP = withRateLimit(() => searchAmazon(request)).catch((error) => {
-      console.error("[whg:bg] direct fetch threw", error);
+      if (isNetworkFetchError(error)) {
+        console.warn("[whg:bg] direct fetch: network unavailable (offline/sleep?) — next lookup retries");
+      } else {
+        console.error("[whg:bg] direct fetch threw", error);
+      }
       return null;
     });
     const googleP = withRateLimit(() => searchGoogleShopping(request)).catch((error) => {
-      console.error("[whg:bg] google shopping threw", error);
+      if (isNetworkFetchError(error)) {
+        console.warn("[whg:bg] google shopping: network unavailable (offline/sleep?) — next lookup retries");
+      } else {
+        console.error("[whg:bg] google shopping threw", error);
+      }
       return [] as AmazonItem[];
     });
     const direct = await directP;
@@ -306,7 +319,11 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
     try {
       viaTab = await withRateLimit(() => searchViaHiddenTab(request));
     } catch (error) {
-      console.error("[whg:bg] hidden tab threw", error);
+      if (isNetworkFetchError(error)) {
+        console.warn("[whg:bg] hidden tab: network unavailable (offline/sleep?) — next lookup retries");
+      } else {
+        console.error("[whg:bg] hidden tab threw", error);
+      }
     }
 
     // Direct wins over the tab when both answered (pre-google behavior).
@@ -332,7 +349,11 @@ async function handleSearch(request: SearchRequest): Promise<SearchResponse> {
         }
         console.log("[whg:bg] apple refurb yielded no relevant items");
       } catch (error) {
-        console.error("[whg:bg] apple refurb threw", error);
+        if (isNetworkFetchError(error)) {
+          console.warn("[whg:bg] apple refurb: network unavailable (offline/sleep?) — next lookup retries");
+        } else {
+          console.error("[whg:bg] apple refurb threw", error);
+        }
       }
     }
 
