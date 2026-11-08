@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "badgeGoogle" | "badgeCompare" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb" | "listTooltip" | "listModeLabel" | "listModeHint";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "badgeGoogle" | "badgeCompare" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb" | "listTooltip" | "listModeLabel" | "listModeHint" | "listToggleShow" | "listToggleHide";
 
 type Lang = "de" | "en" | "ru";
 
@@ -21,6 +21,8 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     listTooltip: "Neupreis-Spanne auf Amazon",
     listModeLabel: "Listenmodus",
     listModeHint: "Gewinn/Verlust bei jedem Inserat im Suchergebnis",
+    listToggleShow: "Preise anzeigen",
+    listToggleHide: "Preise ausblenden",
   },
   en: {
     badgeUsed: "Willhaben",
@@ -40,6 +42,8 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     listTooltip: "New-price range on Amazon",
     listModeLabel: "List mode",
     listModeHint: "Gain/loss on every listing in the results",
+    listToggleShow: "Show prices",
+    listToggleHide: "Hide prices",
   },
   ru: {
     badgeUsed: "Willhaben",
@@ -59,6 +63,8 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     listTooltip: "Диапазон новых цен на Amazon",
     listModeLabel: "Режим списка",
     listModeHint: "Выигрыш/проигрыш у каждого объявления в выдаче",
+    listToggleShow: "Показать цены",
+    listToggleHide: "Скрыть цены",
   },
 };
 

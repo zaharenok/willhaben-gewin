@@ -8,7 +8,8 @@ export interface Settings {
   listMode: boolean;
 }
 
-export const DEFAULT_SETTINGS: Settings = { listMode: false };
+/** List mode is the visible value of the extension — on unless switched off. */
+export const DEFAULT_SETTINGS: Settings = { listMode: true };
 
 export const SETTINGS_KEY = "settings";
 
@@ -18,12 +19,14 @@ export interface SettingsStorage {
   set(items: Record<string, unknown>): Promise<void>;
 }
 
-/** Read settings; unknown/missing values fall back to the defaults. */
+/** Read settings; missing/garbage values fall back to the defaults. */
 export async function readSettings(area: SettingsStorage): Promise<Settings> {
   const raw = (await area.get(SETTINGS_KEY))[SETTINGS_KEY];
   if (raw === null || typeof raw !== "object") return { ...DEFAULT_SETTINGS };
   const obj = raw as Partial<Settings>;
-  return { listMode: obj.listMode === true };
+  return {
+    listMode: typeof obj.listMode === "boolean" ? obj.listMode : DEFAULT_SETTINGS.listMode,
+  };
 }
 
 export async function writeSettings(area: SettingsStorage, settings: Settings): Promise<void> {

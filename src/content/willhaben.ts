@@ -5,6 +5,7 @@ import { amazonSearchUrl } from "../lib/amazon-links";
 import type { SearchRequest, SearchResponse } from "../lib/protocol";
 import { mountOverlay, type OverlayData, type OverlayHandle } from "./overlay";
 import { startListAnnotations, type ListAnnotations } from "./list-badge";
+import { mountListToggle, type ListToggleHandle } from "./list-toggle";
 import { readSettings, SETTINGS_KEY, type Settings } from "../lib/settings";
 
 /** willhaben.at detail pages (SPA: path can change without a page load). */
@@ -22,7 +23,6 @@ let observer: MutationObserver | null = null;
 let extractTimer: number | null = null;
 let overlay: OverlayHandle | null = null;
 let overlayData: OverlayData | null = null;
-let listController: ListAnnotations | null = null;
 
 function teardown(): void {
   observer?.disconnect();
@@ -139,13 +139,19 @@ async function lookup(listing: Listing, searchUrl: string): Promise<void> {
         };
   overlay.update(overlayData);
 }
+let listController: ListAnnotations | null = null;
+let listToggle: ListToggleHandle | null = null;
 
 function stopList(): void {
   listController?.stop();
   listController = null;
 }
+function stopListToggle(): void {
+  listToggle?.destroy();
+  listToggle = null;
+}
 
-/** Detail pages always show the badge; list pages only when the setting is on. */
+/** Detail pages always show the badge; list pages get prices + a corner toggle. */
 async function applyMode(): Promise<void> {
   const href = location.href;
   let settings: Settings;
@@ -155,10 +161,20 @@ async function applyMode(): Promise<void> {
     settings = { listMode: false };
   }
   if (location.href !== href) return; // SPA navigated while reading settings
-  if (DETAIL_PATH.test(location.pathname)) return;
-  if (LIST_PATH.test(location.pathname) && settings.listMode) {
-    if (!listController) listController = startListAnnotations();
+  if (DETAIL_PATH.test(location.pathname)) {
+    stopListToggle();
+    return;
+  }
+  if (LIST_PATH.test(location.pathname)) {
+    // The corner button belongs to every list page, on or off — it IS the off switch.
+    if (!listToggle) listToggle = mountListToggle(document);
+    if (settings.listMode) {
+      if (!listController) listController = startListAnnotations();
+    } else {
+      stopList();
+    }
   } else {
+    stopListToggle();
     stopList();
   }
 }

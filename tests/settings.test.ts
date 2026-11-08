@@ -22,7 +22,7 @@ function fakeStorage(initial: Record<string, unknown> = {}): SettingsStorage {
 describe("settings", () => {
   it("falls back to defaults when nothing is stored", async () => {
     expect(await readSettings(fakeStorage())).toEqual(DEFAULT_SETTINGS);
-    expect(DEFAULT_SETTINGS.listMode).toBe(false);
+    expect(DEFAULT_SETTINGS.listMode).toBe(true);
   });
 
   it("round-trips a written value", async () => {
@@ -35,7 +35,7 @@ describe("settings", () => {
   it("ignores stored garbage", async () => {
     expect(await readSettings(fakeStorage({ [SETTINGS_KEY]: "junk" }))).toEqual(DEFAULT_SETTINGS);
     expect(await readSettings(fakeStorage({ [SETTINGS_KEY]: { listMode: "yes" } }))).toEqual({
-      listMode: false,
+      listMode: true,
     });
   });
 });
