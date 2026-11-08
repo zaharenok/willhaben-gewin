@@ -6,6 +6,7 @@ import type { SearchRequest, SearchResponse } from "../lib/protocol";
 import { mountOverlay, type OverlayData, type OverlayHandle } from "./overlay";
 import { startListAnnotations, type ListAnnotations } from "./list-badge";
 import { mountListToggle, type ListToggleHandle } from "./list-toggle";
+import { isContextInvalidatedError } from "../lib/net";
 import { readSettings, SETTINGS_KEY, type Settings } from "../lib/settings";
 
 /** willhaben.at detail pages (SPA: path can change without a page load). */
@@ -116,7 +117,10 @@ async function lookup(listing: Listing, searchUrl: string): Promise<void> {
     response = (await browser.runtime.sendMessage(request)) as SearchResponse;
     console.log("[whg] ← response", response.status, response.status === "ok" ? response.stats : response);
   } catch (error) {
-    console.warn("[whg] sendMessage failed", error);
+    // Orphaned script after an extension reload — noise, not a failure.
+    if (!isContextInvalidatedError(error)) {
+      console.warn("[whg] sendMessage failed", error);
+    }
     response = { status: "error", message: error instanceof Error ? error.message : String(error) };
   }
 

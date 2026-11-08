@@ -25,3 +25,17 @@ export function isTabDragError(error: unknown): boolean {
     /tabs cannot be edited right now/i.test(error.message)
   );
 }
+
+/**
+ * "Extension context invalidated." — the content script belongs to an
+ * extension instance that was reloaded/updated/removed. Every API call from
+ * it will keep failing; the only correct move is to stop logging and tear
+ * the annotator down (a fresh script takes over after the page reloads).
+ */
+export function isContextInvalidatedError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    typeof error.message === "string" &&
+    /extension context invalidated/i.test(error.message)
+  );
+}

@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill";
 import { extractRows, SELECTORS_LIST, type ListRow } from "../lib/extract-list";
+import { isContextInvalidatedError } from "../lib/net";
 import type { SearchRequest, SearchResponse } from "../lib/protocol";
 import { rowBadge } from "../lib/row-view";
 
@@ -24,11 +25,16 @@ export function startListAnnotations(): ListAnnotations {
   scan();
   console.log("[whg:list] annotating result rows");
 
+  /** Full teardown — also the answer to an invalidated extension context. */
+  const halt = (): void => {
+    stopped = true;
+    window.clearInterval(timer);
+    for (const el of document.querySelectorAll("[data-whg-row-badge]")) el.remove();
+  };
+
   return {
     stop() {
-      stopped = true;
-      window.clearInterval(timer);
-      for (const el of document.querySelectorAll("[data-whg-row-badge]")) el.remove();
+      halt();
       console.log("[whg:list] stopped");
     },
   };
@@ -63,6 +69,13 @@ export function startListAnnotations(): ListAnnotations {
       };
       response = (await browser.runtime.sendMessage(request)) as SearchResponse;
     } catch (error) {
+      if (isContextInvalidatedError(error)) {
+        // The extension was reloaded under us — this script is an orphan and
+        // every further call would fail the same way. Stop silently; the
+        // fresh content script takes over after the page reloads.
+        halt();
+        return;
+      }
       console.warn("[whg:list] lookup failed", row.id, error);
     }
     inFlight.delete(row.id);
