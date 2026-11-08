@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isNetworkFetchError, isTabDragError } from "../src/lib/net";
+import { isContextInvalidatedError, isNetworkFetchError, isTabDragError } from "../src/lib/net";
 
 describe("isNetworkFetchError", () => {
   it("matches the fetch() offline/sleep TypeError", () => {
