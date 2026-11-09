@@ -19,6 +19,7 @@ The original idea (Amazon → Willhaben price overlay) is deferred and kept in [
 No backend, no Amazon account — everything runs in the browser.
 
 **List mode (optional)** — on by default: every search-result row gets a small win/loss pill — green `−€ …` when the listing undercuts the Amazon new price, red `+€ …` when it overpays (median candidate, unconfirmed). A corner button on every list page toggles it ("Show/Hide prices"), as does the popup switch; changes apply live, no reload needed. Pills fill in progressively (rate limit).
+**Immobilien (v0.8.0)** — rent listings in Vienna get a €/m² badge with an orientation-only Mietrechtsgesetz check: net rent per m² vs. the Wiener Richtwert (€6.74/m² since 4/2026, max ≈ €8.99 with surcharges) → green "within rent cap" / red "well above rent cap" (never legal advice); flags for Befristung and Provision, a last-seen price delta, and a panel linking the Wiener Mietenrechner. In list mode every Immobilien result row gets a €/m² pill colored against the page: cheapest third green, dearest third red. Purchase listings render without the rent verdict. The list path is fully local — no network.
 
 ## Roadmap
 
@@ -56,6 +57,7 @@ Die ursprüngliche Idee (Amazon → Willhaben) ist zurückgestellt und liegt unt
 **So funktioniert es (MVP):** Anzeige extrahieren (Titel, Preis, Zustand) → Amazon-Suche im Background-Worker (Rate-Limit, 24 h Cache) → Treffer-Matching + Bestätigung durch den Nutzer (Top-3-Panel, Median-Kandidat nur als Vorschau `≈`) → Badge neben dem Anzeigenpreis (Shadow DOM) → bei Blockade: Retry über einen Hintergrund-Tab, erst wenn auch das scheitert → Fallback-Link zur Amazon-Suche. Kein Backend, kein Amazon-Konto.
 
 **Listenmodus (optional)** — standardmäßig an: jedes Suchergebnis bekommt eine kleine Gewinn/Verlust-Pille — grün `−€ …`, wenn das Inserat unter dem Amazon-Neupreis liegt, rot `+€ …` bei Überzahlung (Median-Kandidat, unbestätigt). Eine Ecken-Schaltfläche auf jeder Listenseite schaltet um („Preise anzeigen/ausblenden"), ebenso der Popup-Schalter; Änderungen greifen sofort, ohne Reload. Die Pillen füllen sich nach und nach (Rate-Limit).
+**Immobilien (ab v0.8.0)** — Miet-Inserate in Wien bekommen ein €/m²-Badge mit orientierender MRG-Prüfung: Netto-Miete pro m² gegen den Wiener Richtwert (6,74 €/m² seit 4/2026, max ≈ 8,99 € mit Zuschlägen) → grün „im Richtwert-Rahmen“ / rot „deutlich über Richtwert“ (keine Rechtsberatung); Flags für Befristung und Provision, Preisdelta zum letzten Besuch, Panel mit Link zum Wiener Mietenrechner. Im Listenmodus bekommt jede Immobilien-Zeile eine €/m²-Pille, relativ zur Seite eingefärbt: günstigstes Drittel grün, teuerstes rot. Kauf-Anzeigen erscheinen ohne Miet-Verdict. Der Listenpfad ist komplett lokal — ohne Netzwerk.
 
 **Roadmap:** `- [x]` Anzeige extrahieren · Amazon-Suche · Matching + Bestätigung · Overlay-Badge · Cache/Fallback + Headless-E2E.
 
@@ -76,6 +78,7 @@ Chrome-расширение (Manifest V3), которое на каждой ст
 **Как работает (MVP):** извлечение объявления (заголовок, цена, состояние) → поиск Amazon в background-воркере (rate-limit, кэш 24 ч) → матчинг заголовка + обязательное подтверждение пользователем (панель топ-3, медианный кандидат только как предпросмотр `≈`) → бейдж рядом с ценой объявления (Shadow DOM) → при блокировке: повтор через фоновую вкладку Amazon, и только если и это не вышло — фолбэк-ссылка на поиск. Без бэкенда, без аккаунта Amazon.
 
 **Режим списка (опционально)** — включён по умолчанию: у каждого результата поиска появляется маленькая плашка выигрыш/проигрыш — зелёная `−€ …`, если объявление дешевле нового на Amazon, красная `+€ …` при переплате (медианный кандидат, без подтверждения). Кнопка в углу каждой страницы списка переключает режим («Показать/Скрыть цены»), как и тумблер в попапе; изменения применяются сразу, без перезагрузки. Плашки заполняются постепенно (rate-limit).
+**Недвижимость (с v0.8.0)** — аренда в Вене получает бейдж €/м² с ориентировочной проверкой по Mietrechtsgesetz: чистая аренда за м² против венского Richtwert (6,74 €/м² с 04.2026, максимум ≈ 8,99 € с надбавками) → зелёный «в рамках Richtwert» / красный «заметно выше Richtwert» (не юридическая консультация); флаги Befristung и Provision, дельта цены с последнего визита, панель со ссылкой на Wiener Mietenrechner. В режиме списка каждая строка недвижимости получает плашку €/м², окрашенную относительно страницы: самая дешёвая треть — зелёная, самая дорогая — красная. Объявления о покупке показываются без арендного вердикта. Списочный путь полностью локальный — без сети.
 
 **Роадмап:** `- [x]` извлечение объявления · поиск Amazon · матчинг + подтверждение · оверлей-бейдж · кэш/фолбэк + headless-e2e.
 

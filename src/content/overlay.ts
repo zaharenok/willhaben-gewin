@@ -26,7 +26,7 @@ const ESCAPES: Record<string, string> = {
   "'": "&#39;",
 };
 
-function esc(text: string): string {
+export function esc(text: string): string {
   return text.replace(/[&<>"']/g, (ch) => ESCAPES[ch]);
 }
 

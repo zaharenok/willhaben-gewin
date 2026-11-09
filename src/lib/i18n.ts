@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "badgeGoogle" | "badgeCompare" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb" | "listTooltip" | "listModeLabel" | "listModeHint" | "listToggleShow" | "listToggleHide";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "badgeGoogle" | "badgeCompare" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb" | "listTooltip" | "listModeLabel" | "listModeHint" | "listToggleShow" | "listToggleHide" | "immGesamt" | "immNetto" | "immBk" | "immArea" | "immTotal" | "immPrice" | "immVerdictOk" | "immVerdictHigh" | "immVerdictUnknown" | "immDisclaimer" | "immRichtwertInfo" | "immSince" | "immListTooltip";
 
 type Lang = "de" | "en" | "ru";
 
@@ -23,6 +23,19 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     listModeHint: "Gewinn/Verlust bei jedem Inserat im Suchergebnis",
     listToggleShow: "Preise anzeigen",
     listToggleHide: "Preise ausblenden",
+    immGesamt: "Gesamtmiete",
+    immNetto: "Netto-Miete",
+    immBk: "Betriebskosten",
+    immArea: "Wohnfläche",
+    immTotal: "gesamt",
+    immVerdictOk: "im Richtwert-Rahmen",
+    immVerdictHigh: "deutlich über Richtwert",
+    immVerdictUnknown: "Richtwert nicht prüfbar",
+    immDisclaimer: "Orientierungswert – keine Rechtsberatung",
+    immRichtwertInfo: "Wiener Mietenrechner",
+    immSince: "seit",
+    immListTooltip: "€/m² auf dieser Ergebnisseite",
+    immPrice: "Preis",
   },
   en: {
     badgeUsed: "Willhaben",
@@ -44,6 +57,19 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     listModeHint: "Gain/loss on every listing in the results",
     listToggleShow: "Show prices",
     listToggleHide: "Hide prices",
+    immGesamt: "Total rent",
+    immNetto: "Net rent",
+    immBk: "Service charges",
+    immArea: "Floor area",
+    immTotal: "total",
+    immVerdictOk: "within rent cap",
+    immVerdictHigh: "well above rent cap",
+    immVerdictUnknown: "rent cap not checkable",
+    immDisclaimer: "Orientation only – not legal advice",
+    immRichtwertInfo: "Vienna rent calculator",
+    immSince: "since",
+    immListTooltip: "€/m² on this results page",
+    immPrice: "Price",
   },
   ru: {
     badgeUsed: "Willhaben",
@@ -65,6 +91,19 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     listModeHint: "Выигрыш/проигрыш у каждого объявления в выдаче",
     listToggleShow: "Показать цены",
     listToggleHide: "Скрыть цены",
+    immGesamt: "Полная аренда",
+    immNetto: "Чистая аренда",
+    immBk: "Коммунальные платежи",
+    immArea: "Жилая площадь",
+    immTotal: "итого",
+    immVerdictOk: "в рамках Richtwert",
+    immVerdictHigh: "заметно выше Richtwert",
+    immVerdictUnknown: "Richtwert не проверить",
+    immDisclaimer: "Ориентировочно — не юридическая консультация",
+    immRichtwertInfo: "Венский калькулятор аренды",
+    immSince: "с",
+    immListTooltip: "€/м² на этой странице",
+    immPrice: "Цена",
   },
 };
 

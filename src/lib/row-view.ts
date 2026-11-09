@@ -1,5 +1,7 @@
 import { computeSavings, formatEur } from "./savings";
 import { t } from "./i18n";
+/** Shared shadow-DOM pill styling for list-row badges (Amazon win/loss + immobilien €/m²). */
+export const ROW_PILL_CSS = `.pill{display:inline-block;font:600 12px/1.3 system-ui,sans-serif;padding:2px 8px;border-radius:999px;margin-left:6px;white-space:nowrap;vertical-align:middle}.whg-loading{color:#6b6b6b;background:#f1f1f1;border:1px solid #ddd}.win{color:#0a7d33;background:#e7f6ec;border:1px solid #b7e2c3}.loss{color:#c62828;background:#fdecea;border:1px solid #f5c6c2}.unknown{color:#6b6b6b;background:#f1f1f1;border:1px solid #ddd}`;
 
 export type RowBadgeKind = "win" | "loss" | "unknown";
 

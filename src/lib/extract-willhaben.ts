@@ -46,13 +46,13 @@ export function extractListing(doc: Document): Listing | null {
     }
   }
 
-  const id = extractId(doc);
+  const id = extractAdId(doc);
   if (!id) return null;
   return { id, title, priceEur, conditionText };
 }
 
 /** Listing id: "willhaben-Code: 123…" element first, URL slug as fallback. */
-function extractId(doc: Document): string | null {
+export function extractAdId(doc: Document): string | null {
   const codeEl = doc.querySelector(SELECTORS.adCode);
   const code = codeEl?.textContent?.match(/\d{6,}/)?.[0];
   if (code) return code;

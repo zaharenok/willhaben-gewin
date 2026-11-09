@@ -2,7 +2,7 @@ import browser from "webextension-polyfill";
 import { extractRows, SELECTORS_LIST, type ListRow } from "../lib/extract-list";
 import { isContextInvalidatedError } from "../lib/net";
 import type { SearchRequest, SearchResponse } from "../lib/protocol";
-import { rowBadge } from "../lib/row-view";
+import { rowBadge, ROW_PILL_CSS } from "../lib/row-view";
 
 /** Rescan cadence — cheap querySelectorAll; catches SPA re-renders/infinite scroll. */
 const SCAN_INTERVAL_MS = 800;
@@ -53,7 +53,7 @@ export function startListAnnotations(): ListAnnotations {
     const host = document.createElement("div");
     host.setAttribute("data-whg-row-badge", "");
     const shadow = host.attachShadow({ mode: "open" });
-    shadow.innerHTML = `<style>.pill{display:inline-block;font:600 12px/1.3 system-ui,sans-serif;padding:2px 8px;border-radius:999px;margin-left:6px;white-space:nowrap;vertical-align:middle}.whg-loading{color:#6b6b6b;background:#f1f1f1;border:1px solid #ddd}.win{color:#0a7d33;background:#e7f6ec;border:1px solid #b7e2c3}.loss{color:#c62828;background:#fdecea;border:1px solid #f5c6c2}.unknown{color:#6b6b6b;background:#f1f1f1;border:1px solid #ddd}</style><span class="pill whg-loading">…</span>`;
+    shadow.innerHTML = `<style>${ROW_PILL_CSS}</style><span class="pill whg-loading">…</span>`;
     const pill = shadow.querySelector(".pill")!;
     // Next to the row price, inside its flex container; whole card as fallback.
     if (priceEl?.parentElement) priceEl.parentElement.insertBefore(host, priceEl.nextSibling);

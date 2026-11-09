@@ -1,10 +1,15 @@
 import browser from "webextension-polyfill";
 import { extractListing, SELECTORS, type Listing } from "../lib/extract-willhaben";
+import { extractImmobilien, type ImmobilienListing } from "../lib/extract-immobilien";
+import { checkRichtwert } from "../lib/richtwert";
+import { getPriceDelta, rememberPrice, type PriceHistoryStorage } from "../lib/price-history";
 import { searchQueryFor } from "../lib/match";
 import { amazonSearchUrl } from "../lib/amazon-links";
 import type { SearchRequest, SearchResponse } from "../lib/protocol";
 import { mountOverlay, type OverlayData, type OverlayHandle } from "./overlay";
+import { mountImmobilienOverlay, type ImmobilienBadgeData, type ImmobilienOverlayHandle } from "./overlay-immobilien";
 import { startListAnnotations, type ListAnnotations } from "./list-badge";
+import { startImmobilienListAnnotations } from "./list-badge-immobilien";
 import { mountListToggle, type ListToggleHandle } from "./list-toggle";
 import { isContextInvalidatedError } from "../lib/net";
 import { readSettings, SETTINGS_KEY, type Settings } from "../lib/settings";
@@ -13,6 +18,10 @@ import { readSettings, SETTINGS_KEY, type Settings } from "../lib/settings";
 const DETAIL_PATH = /^\/iad\/kaufen-und-verkaufen\/d\//;
 /** List pages (search results, categories) — everything under the section except details. */
 const LIST_PATH = /^\/iad\/kaufen-und-verkaufen\//;
+/** Immobilien detail pages — same badge flow, but €/m² + Richtwert instead of Amazon. */
+const IMM_DETAIL_PATH = /^\/iad\/immobilien\/d\//;
+/** Immobilien search/category pages. */
+const IMM_LIST_PATH = /^\/iad\/immobilien\//;
 const NAV_POLL_MS = 500;
 /** Give up waiting for the listing price after this long (title-only lookup). */
 const EXTRACT_TIMEOUT_MS = 10_000;
@@ -24,6 +33,7 @@ let observer: MutationObserver | null = null;
 let extractTimer: number | null = null;
 let overlay: OverlayHandle | null = null;
 let overlayData: OverlayData | null = null;
+let immOverlay: ImmobilienOverlayHandle | null = null;
 
 function teardown(): void {
   observer?.disconnect();
@@ -35,6 +45,8 @@ function teardown(): void {
   overlay?.destroy();
   overlay = null;
   overlayData = null;
+  immOverlay?.destroy();
+  immOverlay = null;
 }
 
 /** The sticky-header price lives in a cramped top bar — never anchor there.
@@ -52,26 +64,8 @@ function pickAnchor(): Element | null {
   return candidates.find((el) => el.getClientRects().length > 0) ?? null;
 }
 
-function beginLookup(listing: Listing): void {
-  console.log("[whg] listing extracted", {
-    id: listing.id,
-    title: listing.title,
-    priceEur: listing.priceEur,
-    conditionText: listing.conditionText,
-  });
-
-  const mount = (anchor: Element): void => {
-    const searchUrl = amazonSearchUrl(searchQueryFor(listing.title));
-    console.log("[whg] badge anchor", `${anchor.tagName}.${anchor.getAttribute("data-testid") ?? ""}`);
-    overlay = mountOverlay(anchor, listing.priceEur, (asin) => {
-      if (!overlayData) return;
-      overlayData = { ...overlayData, confirmedAsin: asin };
-      overlay?.update(overlayData);
-      void browser.storage.local.set({ [`sel:${listing.id}`]: asin }).catch(() => undefined);
-    });
-    void lookup(listing, searchUrl);
-  };
-
+/** Wait for a visible price/title anchor, then mount (SPA renders late). */
+function mountWhenAnchored(mount: (anchor: Element) => void): void {
   const startedAt = Date.now();
   const hrefAtStart = location.href;
   const tryAnchor = (): void => {
@@ -94,6 +88,27 @@ function beginLookup(listing: Listing): void {
     console.warn("[whg] no anchor element found — badge not rendered");
   };
   tryAnchor();
+}
+
+function beginLookup(listing: Listing): void {
+  console.log("[whg] listing extracted", {
+    id: listing.id,
+    title: listing.title,
+    priceEur: listing.priceEur,
+    conditionText: listing.conditionText,
+  });
+
+  mountWhenAnchored((anchor) => {
+    const searchUrl = amazonSearchUrl(searchQueryFor(listing.title));
+    console.log("[whg] badge anchor", `${anchor.tagName}.${anchor.getAttribute("data-testid") ?? ""}`);
+    overlay = mountOverlay(anchor, listing.priceEur, (asin) => {
+      if (!overlayData) return;
+      overlayData = { ...overlayData, confirmedAsin: asin };
+      overlay?.update(overlayData);
+      void browser.storage.local.set({ [`sel:${listing.id}`]: asin }).catch(() => undefined);
+    });
+    void lookup(listing, searchUrl);
+  });
 }
 
 async function lookup(listing: Listing, searchUrl: string): Promise<void> {
@@ -143,6 +158,69 @@ async function lookup(listing: Listing, searchUrl: string): Promise<void> {
         };
   overlay.update(overlayData);
 }
+/** chrome.storage.local → PriceHistoryStorage (same adapter shape as the background cache). */
+const priceHistoryStorage: PriceHistoryStorage = {
+  get: async (key) => (await browser.storage.local.get(key))[key],
+  set: async (key, value) => {
+    await browser.storage.local.set({ [key]: value });
+  },
+};
+
+/** Immobilien detail pages: local €/m² + Richtwert verdict — no Amazon lookup. */
+function beginImmobilien(): void {
+  let settled = false;
+  let gaveUp = false;
+  const tryExtract = (): void => {
+    if (settled) return;
+    const listing = extractImmobilien(document);
+    // Wait for the contact-box total to render; after the timeout, settle without it.
+    if (!listing || (listing.gesamtmieteEur === null && !gaveUp)) return;
+    settled = true;
+    observer?.disconnect();
+    observer = null;
+    if (extractTimer !== null) {
+      window.clearTimeout(extractTimer);
+      extractTimer = null;
+    }
+    mountImmobilien(listing);
+  };
+
+  tryExtract();
+  if (settled) return;
+  if (document.body) {
+    observer = new MutationObserver(tryExtract);
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+  extractTimer = window.setTimeout(() => {
+    extractTimer = null;
+    gaveUp = true;
+    tryExtract();
+    if (!settled) console.warn("[whg] immobilien listing NOT found after 10s");
+  }, EXTRACT_TIMEOUT_MS);
+}
+
+function mountImmobilien(listing: ImmobilienListing): void {
+  console.log("[whg] immobilien extracted", {
+    id: listing.id,
+    gesamtmieteEur: listing.gesamtmieteEur,
+    nettoMieteEur: listing.nettoMieteEur,
+    wohnflaecheM2: listing.wohnflaecheM2,
+  });
+  const data: ImmobilienBadgeData = { listing, richtwert: checkRichtwert(listing), delta: null };
+  mountWhenAnchored((anchor) => {
+    immOverlay = mountImmobilienOverlay(anchor, data);
+    void refreshDelta(data);
+  });
+}
+
+/** Best-effort delta vs. the last seen price, then remember the current one. */
+async function refreshDelta(data: ImmobilienBadgeData): Promise<void> {
+  const delta = await getPriceDelta(priceHistoryStorage, data.listing.id, data.listing.gesamtmieteEur);
+  if (!immOverlay) return; // navigated away while storage answered
+  immOverlay.update({ ...data, delta });
+  void rememberPrice(priceHistoryStorage, data.listing.id, data.listing.gesamtmieteEur);
+}
+
 let listController: ListAnnotations | null = null;
 let listToggle: ListToggleHandle | null = null;
 
@@ -165,15 +243,19 @@ async function applyMode(): Promise<void> {
     settings = { listMode: false };
   }
   if (location.href !== href) return; // SPA navigated while reading settings
-  if (DETAIL_PATH.test(location.pathname)) {
+  if (DETAIL_PATH.test(location.pathname) || IMM_DETAIL_PATH.test(location.pathname)) {
     stopListToggle();
     return;
   }
-  if (LIST_PATH.test(location.pathname)) {
+  if (LIST_PATH.test(location.pathname) || IMM_LIST_PATH.test(location.pathname)) {
     // The corner button belongs to every list page, on or off — it IS the off switch.
     if (!listToggle) listToggle = mountListToggle(document);
     if (settings.listMode) {
-      if (!listController) listController = startListAnnotations();
+      if (!listController) {
+        listController = IMM_LIST_PATH.test(location.pathname)
+          ? startImmobilienListAnnotations()
+          : startListAnnotations();
+      }
     } else {
       stopList();
     }
@@ -187,6 +269,11 @@ function checkNavigation(): void {
   currentHref = location.href;
   teardown();
   stopList();
+  if (IMM_DETAIL_PATH.test(location.pathname)) {
+    console.log("[whg] immobilien detail", location.pathname);
+    beginImmobilien();
+    return;
+  }
   if (!DETAIL_PATH.test(location.pathname)) {
     console.log("[whg] not a detail page", location.pathname);
     void applyMode();
@@ -234,7 +321,7 @@ function checkNavigation(): void {
 
 browser.storage.onChanged.addListener((changes, area) => {
   if (area !== "local" || !(SETTINGS_KEY in changes)) return;
-  if (DETAIL_PATH.test(location.pathname)) return;
+  if (DETAIL_PATH.test(location.pathname) || IMM_DETAIL_PATH.test(location.pathname)) return;
   void applyMode();
 });
 
