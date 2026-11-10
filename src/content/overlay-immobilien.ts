@@ -10,6 +10,8 @@ import {
 } from "../lib/richtwert";
 import type { ImmobilienListing } from "../lib/extract-immobilien";
 import type { PriceDelta } from "../lib/price-history";
+import { monthlyRate } from "../lib/financing";
+import { rentMedianForBezirk } from "../lib/bezirk-medians";
 
 export interface ImmobilienBadgeData {
   listing: ImmobilienListing;
@@ -29,6 +31,7 @@ const VERDICT_KEYS: Record<RichtwertVerdict, MsgKey> = {
 };
 
 const WIEN_MIETENRECHNER_URL = "https://www.wien.gv.at/wohnen/miete-berechnen";
+const KREDITZINSEN_URL = "https://durchblicker.at/kreditzinsen";
 
 function formatDate(ts: number): string {
   const lang = typeof navigator !== "undefined" ? navigator.language : "de-AT";
@@ -76,9 +79,11 @@ export function mountImmobilienOverlay(anchor: Element, initial: ImmobilienBadge
     const heroCls =
       richtwert.verdict === "plausibel" ? "whg-save" : richtwert.verdict === "auffaellig" ? "whg-cost" : "";
     const ratioPart = richtwert.ratio !== null ? ` (${richtwert.ratio.toFixed(2).replace(".", ",")}×)` : "";
+    const rate = listing.isRent || listing.gesamtmieteEur === null ? null : monthlyRate(listing.gesamtmieteEur);
     const subBits = [
       richtwert.nettoPerM2 !== null ? `${t("immNetto")} ${formatPerM2(richtwert.nettoPerM2)}` : "",
-      `${t(VERDICT_KEYS[richtwert.verdict])}${ratioPart}`,
+      rate !== null ? `${t("immRate")}: ${formatEur(rate)}` : "",
+      listing.isRent ? `${t(VERDICT_KEYS[richtwert.verdict])}${ratioPart}` : "",
     ]
       .filter(Boolean)
       .join(" · ");
@@ -96,6 +101,8 @@ export function mountImmobilienOverlay(anchor: Element, initial: ImmobilienBadge
 
   function renderPanel({ listing, richtwert, delta }: ImmobilienBadgeData): string {
     const rows: Array<[string, string]> = [];
+    const infoUrl = listing.isRent ? WIEN_MIETENRECHNER_URL : KREDITZINSEN_URL;
+    const infoKey: MsgKey = listing.isRent ? "immRichtwertInfo" : "immRateInfo";
     if (listing.isRent) {
       if (listing.gesamtmieteEur !== null) rows.push([t("immGesamt"), formatEur(listing.gesamtmieteEur)]);
       if (listing.nettoMieteEur !== null) rows.push([t("immNetto"), formatEur(listing.nettoMieteEur)]);
@@ -108,6 +115,16 @@ export function mountImmobilienOverlay(anchor: Element, initial: ImmobilienBadge
       rows.push([`${t("immNetto")}/m²`, formatPerM2(richtwert.nettoPerM2)]);
       rows.push(["Richtwert", `${formatPerM2(RICHTWERT_EUR_M2)} · max ${formatPerM2(RICHTWERT_CEILING_EUR_M2)}`]);
     }
+    const median = rentMedianForBezirk(listing.bezirk);
+    if (listing.isRent && median !== null) {
+      rows.push([`${t("immMedian")} (${listing.bezirk}.)`, `${formatPerM2(median)} · Q1 2026`]);
+    }
+    if (!listing.isRent && listing.gesamtmieteEur !== null) {
+      const rate = monthlyRate(listing.gesamtmieteEur);
+      if (rate !== null) rows.push([t("immRate"), formatEur(rate)]);
+    }
+    if (listing.energy.length > 0) rows.push([t("immEnergy"), ""]);
+    for (const { label, value } of listing.energy) rows.push([label, value]);
     const rowHtml = rows
       .map(
         ([k, v]) =>
@@ -126,7 +143,7 @@ export function mountImmobilienOverlay(anchor: Element, initial: ImmobilienBadge
       deltaRow +
       (flags.length ? `<div class="whg-row"><span class="whg-row-title">${esc(flags.join(" · "))}</span></div>` : "") +
       `<div class="whg-row"><span class="whg-row-title">${esc(t("immDisclaimer"))}</span></div>` +
-      `<a class="whg-row whg-linkrow" href="${WIEN_MIETENRECHNER_URL}" target="_blank" rel="noopener noreferrer"><span class="whg-row-title">${esc(t("immRichtwertInfo"))} ↗</span></a></div>`
+      `<a class="whg-row whg-linkrow" href="${infoUrl}" target="_blank" rel="noopener noreferrer"><span class="whg-row-title">${esc(t(infoKey))} ↗</span></a></div>`
     );
   }
 

@@ -1,4 +1,4 @@
-export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "badgeGoogle" | "badgeCompare" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb" | "listTooltip" | "listModeLabel" | "listModeHint" | "listToggleShow" | "listToggleHide" | "immGesamt" | "immNetto" | "immBk" | "immArea" | "immTotal" | "immPrice" | "immVerdictOk" | "immVerdictHigh" | "immVerdictUnknown" | "immDisclaimer" | "immRichtwertInfo" | "immSince" | "immListTooltip";
+export type MsgKey = "badgeUsed" | "badgeNew" | "badgeRefurb" | "badgeGoogle" | "badgeCompare" | "cheaper" | "costlier" | "chooseTitle" | "blockedHint" | "noMatch" | "openSearch" | "openGoogle" | "loadingHint" | "appleRefurb" | "listTooltip" | "listModeLabel" | "listModeHint" | "listToggleShow" | "listToggleHide" | "immGesamt" | "immNetto" | "immBk" | "immArea" | "immTotal" | "immPrice" | "immVerdictOk" | "immVerdictHigh" | "immVerdictUnknown" | "immDisclaimer" | "immRichtwertInfo" | "immSince" | "immListTooltip" | "immMedian" | "immRate" | "immEnergy" | "immRateInfo";
 
 type Lang = "de" | "en" | "ru";
 
@@ -36,6 +36,10 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     immSince: "seit",
     immListTooltip: "€/m² auf dieser Ergebnisseite",
     immPrice: "Preis",
+    immMedian: "Bezirks-Median",
+    immRate: "Monatsrate (20 J., 3,60 %)",
+    immEnergy: "Energieausweis/Heizung",
+    immRateInfo: "Kreditzinsen AT",
   },
   en: {
     badgeUsed: "Willhaben",
@@ -70,6 +74,10 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     immSince: "since",
     immListTooltip: "€/m² on this results page",
     immPrice: "Price",
+    immMedian: "District median",
+    immRate: "Monthly rate (20y, 3.60%)",
+    immEnergy: "Energy certificate/heating",
+    immRateInfo: "AT loan rates",
   },
   ru: {
     badgeUsed: "Willhaben",
@@ -104,6 +112,10 @@ const DICT: Record<Lang, Record<MsgKey, string>> = {
     immSince: "с",
     immListTooltip: "€/м² на этой странице",
     immPrice: "Цена",
+    immMedian: "Медиана округа",
+    immRate: "Взнос в месяц (20 л., 3,60 %)",
+    immEnergy: "Энергопаспорт/отопление",
+    immRateInfo: "Ставки по кредитам (AT)",
   },
 };
 

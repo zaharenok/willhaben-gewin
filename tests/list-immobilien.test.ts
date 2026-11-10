@@ -20,15 +20,19 @@ function pillOf(host: Element): Element {
 }
 
 describe("immobilien list pills", () => {
-  it("annotates search rows with €/m², cheapest third green, dearest third red", () => {
+  it("colors rows against their Bezirk median (1090 loss, 1080 win)", () => {
     loadSearchFixture();
     const ctrl = startImmobilienListAnnotations();
     const hosts = [...document.querySelectorAll("[data-whg-row-badge]")];
     expect(hosts.length).toBeGreaterThan(3);
-    const kinds = hosts.map((h) => pillOf(h).className);
-    expect(kinds.some((c) => c.includes("win"))).toBe(true);
-    expect(kinds.some((c) => c.includes("loss"))).toBe(true);
-    expect(pillOf(hosts[0]).textContent!.replace(/\u00A0/g, " ")).toMatch(/€ \d+,\d{2}\/m²/);
+    const norm = (s: string | null): string => (s ?? "").replace(/\u00A0/g, " ");
+    // 1. Bezirk Alsergrund: € 25,38/m² vs median € 22,68 → loss
+    expect(norm(pillOf(hosts[0]).className)).toContain("loss");
+    expect(norm(pillOf(hosts[0]).getAttribute("title"))).toContain("22,68");
+    // 8. Bezirk Josefstadt: € 23,10/m² vs median € 23,21 → win
+    expect(norm(pillOf(hosts[2]).className)).toContain("win");
+    expect(norm(pillOf(hosts[2]).getAttribute("title"))).toContain("23,21");
+    expect(norm(pillOf(hosts[0]).textContent)).toMatch(/€ \d+,\d{2}\/m²/);
     ctrl.stop();
     expect(document.querySelectorAll("[data-whg-row-badge]").length).toBe(0);
   });
